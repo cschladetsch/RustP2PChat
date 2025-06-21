@@ -1,8 +1,7 @@
 use std::io;
-use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncReadExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::Mutex;
+use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::time::Duration;
 use futures::future::try_join;
 
@@ -49,17 +48,14 @@ impl ChatClient {
 }
 
 pub async fn handle_connection(stream: TcpStream) -> io::Result<()> {
-    let stream = Arc::new(Mutex::new(stream));
-    
-    let read_stream = Arc::clone(&stream);
-    let write_stream = Arc::clone(&stream);
+    let (reader, writer) = stream.into_split();
     
     let read_handle = tokio::spawn(async move {
-        read_messages(read_stream).await
+        read_messages(reader).await
     });
     
     let write_handle = tokio::spawn(async move {
-        write_messages(write_stream).await
+        write_messages(writer).await
     });
     
     let _ = try_join(
@@ -70,33 +66,31 @@ pub async fn handle_connection(stream: TcpStream) -> io::Result<()> {
     Ok(())
 }
 
-async fn read_messages(stream: Arc<Mutex<TcpStream>>) -> io::Result<()> {
+async fn read_messages(mut reader: OwnedReadHalf) -> io::Result<()> {
     loop {
         let mut buffer = vec![0; 1024];
         
-        let n = {
-            let mut stream_guard = stream.lock().await;
-            match stream_guard.read(&mut buffer).await {
-                Ok(0) => {
-                    println!("\nPeer disconnected");
-                    return Ok(());
-                }
-                Ok(n) => n,
-                Err(e) => {
-                    eprintln!("\nError reading from peer: {}", e);
-                    return Err(e);
-                }
+        match reader.read(&mut buffer).await {
+            Ok(0) => {
+                println!("\nPeer disconnected");
+                return Ok(());
             }
-        };
-        
-        let message = String::from_utf8_lossy(&buffer[..n]);
-        print!("\rPeer: {}", message);
-        print!("You: ");
-        io::Write::flush(&mut io::stdout())?;
+            Ok(n) => {
+                let message = String::from_utf8_lossy(&buffer[..n]).trim_end().to_string();
+                print!("\r\x1b[2K");  // Clear current line
+                println!("Peer: {}", message);
+                print!("You: ");
+                io::Write::flush(&mut io::stdout())?;
+            }
+            Err(e) => {
+                eprintln!("\nError reading from peer: {}", e);
+                return Err(e);
+            }
+        }
     }
 }
 
-async fn write_messages(stream: Arc<Mutex<TcpStream>>) -> io::Result<()> {
+async fn write_messages(mut writer: OwnedWriteHalf) -> io::Result<()> {
     let reader = BufReader::new(tokio::io::stdin());
     let mut lines = reader.lines();
     
@@ -108,12 +102,11 @@ async fn write_messages(stream: Arc<Mutex<TcpStream>>) -> io::Result<()> {
         if !line.is_empty() {
             let message = format!("{}\n", line);
             
-            let mut stream_guard = stream.lock().await;
-            if let Err(e) = stream_guard.write_all(message.as_bytes()).await {
+            if let Err(e) = writer.write_all(message.as_bytes()).await {
                 eprintln!("\nError sending message: {}", e);
                 return Err(e);
             }
-            stream_guard.flush().await?;
+            writer.flush().await?;
         }
         
         print!("You: ");
@@ -196,7 +189,6 @@ where
     Ok(())
 }
 
-use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
 async fn read_messages_split<F>(
     mut reader: OwnedReadHalf,

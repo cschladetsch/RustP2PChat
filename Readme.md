@@ -2,6 +2,10 @@
 
 A simple peer-to-peer chat application written in Rust using Tokio for async networking.
 
+## Demo
+
+![Demo(resources/Demo.png)
+
 ## Features
 
 - Direct peer-to-peer connection (no central server)
