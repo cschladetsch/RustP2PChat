@@ -17,6 +17,7 @@ See [Features](FEATURES.md) and [ChangeLog](CHANGELOG.md)
 - [Configuration](#configuration)
 - [Building from Source](#building-from-source)
 - [Testing](#testing)
+- [Shell Scripts](#shell-scripts)
 - [Connecting Over Internet](#connecting-over-the-internet)
 - [Security](#-security)
 - [Contributing](#-contributing)
@@ -367,11 +368,29 @@ Test encryption specifically:
 cargo run --bin test_chat
 ```
 
-### Quick Testing Script
+### Quick Testing Scripts
 
-Use the provided script for rapid testing of two peers:
+The project includes several testing and demo scripts in the `shell/` directory:
+
+**Quick Testing:**
 ```bash
-./quick_test.sh
+./shell/quick_test.sh          # Rapid testing of two peers
+./shell/automated_test.sh      # Automated test scenarios
+./shell/comprehensive_test.sh  # Full test suite with all features
+```
+
+**Demo Scripts:**
+```bash
+./shell/demo.sh                # Basic demo setup
+./shell/demo_chat.sh          # Interactive chat demonstration
+./shell/demo_colors.sh        # Terminal color testing
+```
+
+**Specialized Tests:**
+```bash
+./shell/test_encryption.sh    # Encryption-specific tests
+./shell/test_p2p.sh          # P2P connection tests
+./shell/test_tmux.sh         # tmux-based split terminal testing
 ```
 
 ### Test Coverage
@@ -523,6 +542,34 @@ You: I'm doing great!
    cargo run
    # Enter: SERVER_IP:8080 (e.g., 192.168.1.100:8080)
    ```
+
+## Shell Scripts
+
+The `shell/` directory contains various testing and demonstration scripts to help you quickly test and explore the application:
+
+### 🧪 Testing Scripts
+- **`quick_test.sh`** - Rapid two-peer testing setup
+- **`automated_test.sh`** - Automated test scenarios with predefined inputs
+- **`comprehensive_test.sh`** - Full feature test suite
+- **`test_encryption.sh`** - Encryption-specific functionality tests
+- **`test_p2p.sh`** - P2P connection and messaging tests
+- **`test_tmux.sh`** - Split-screen terminal testing using tmux
+
+### 🎬 Demo Scripts  
+- **`demo.sh`** - Basic demonstration setup
+- **`demo_chat.sh`** - Interactive chat demonstration
+- **`demo_colors.sh`** - Terminal color and formatting tests
+
+### Usage
+```bash
+# Make scripts executable (if needed)
+chmod +x shell/*.sh
+
+# Run any script
+./shell/quick_test.sh
+```
+
+These scripts automate common testing scenarios and provide examples of different usage patterns. They're especially useful for development, demonstration, and continuous integration testing.
 
 ## Connecting Over the Internet
 
