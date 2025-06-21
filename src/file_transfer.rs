@@ -6,6 +6,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use crate::protocol::{FileInfo, Message, MessageType, StatusUpdate};
 use crate::error::{ChatError, Result};
 
+#[allow(dead_code)]
 const CHUNK_SIZE: usize = 8192;
 
 pub struct FileTransfer {

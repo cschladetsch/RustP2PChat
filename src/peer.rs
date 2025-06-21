@@ -16,6 +16,7 @@ pub struct PeerInfo {
 
 pub struct PeerManager {
     peers: Arc<Mutex<HashMap<String, Peer>>>,
+    #[allow(dead_code)]
     message_tx: mpsc::Sender<(String, Message)>,
 }
 
