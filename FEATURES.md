@@ -6,14 +6,14 @@ This document provides detailed information about all the features implemented i
 
 ## Core Features
 
-### 1. True Peer-to-Peer Architecture
+### True Peer-to-Peer Architecture
 
 - **No Central Server**: Direct TCP connections between peers
 - **Symmetric Design**: Both peers run identical code
 - **Equal Capabilities**: After connection, both peers have the same features
 - **Simultaneous Connect/Listen**: Can attempt outbound connection while accepting inbound
 
-### 2. Enhanced Message Protocol
+### Enhanced Message Protocol
 
 The application supports multiple message types through a binary protocol:
 
@@ -23,7 +23,7 @@ The application supports multiple message types through a binary protocol:
 - **Status Updates**: Progress tracking and connection status
 - **Heartbeat**: Keep-alive mechanism
 
-### 3. Command System
+### Command System
 
 Available commands during chat:
 
@@ -35,14 +35,14 @@ Available commands during chat:
 | `/info` | Show connection information |
 | `/nick <name>` | Set your nickname |
 
-### 4. File Transfer
+### File Transfer
 
 - **Size Limit**: Default 100MB (configurable)
 - **Hash Verification**: SHA256 integrity checking
 - **Progress Tracking**: Real-time transfer progress
 - **Auto-save**: Files saved to `downloads/` directory
 
-### 5. Configuration System
+### Configuration System
 
 Create a default configuration file:
 ```bash
@@ -63,7 +63,18 @@ save_history = true
 max_file_size_mb = 100
 ```
 
-### 6. Command-Line Interface
+### End-to-End Encryption
+
+The application now features military-grade end-to-end encryption:
+
+- **1024-bit RSA Key Exchange**: Secure public key cryptography for initial handshake
+- **AES-256-GCM Encryption**: Military-grade symmetric encryption for messages
+- **Automatic Key Generation**: New encryption keys for every session
+- **Message Authentication**: Built-in integrity verification with GCM
+- **Visual Indicators**: 🔒 icon shows when messages are encrypted
+- **Transparent Operation**: Encryption is automatic and requires no user configuration
+
+### Command-Line Interface
 
 ```bash
 # Basic usage
@@ -83,9 +94,9 @@ CLI Options:
 - `-c, --connect <ADDRESS>`: Peer address to connect to
 - `-n, --nickname <NAME>`: Set your nickname
 - `-d, --debug`: Enable debug logging
-- `--no-encryption`: Disable encryption (when implemented)
+- `--no-encryption`: Disable encryption (not recommended)
 
-### 7. Error Handling
+### Error Handling
 
 Custom error types provide clear, actionable error messages:
 - `BindFailed`: Port already in use with diagnostic help
@@ -95,7 +106,7 @@ Custom error types provide clear, actionable error messages:
 - `FileTransfer`: File-specific errors with size limits
 - `Configuration`: Config file issues
 
-### 8. Logging
+### Logging
 
 Configurable logging levels:
 - `trace`: Very detailed debugging
@@ -104,7 +115,7 @@ Configurable logging levels:
 - `warn`: Warning messages
 - `error`: Error messages only
 
-### 9. Color Support
+### Color Support
 
 The application uses ANSI colors for better readability:
 - **Green**: Your messages
@@ -112,7 +123,7 @@ The application uses ANSI colors for better readability:
 - **Yellow**: Status messages
 - **Red**: Error messages
 
-### 10. Performance Features
+### Performance Features
 
 - **8KB Buffer**: Larger buffer for efficient message handling
 - **Async I/O**: Non-blocking operations with Tokio

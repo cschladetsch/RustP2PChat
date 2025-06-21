@@ -2,7 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2024-12-22
+## [Unreleased] - 2025-06-21
+
+### Added
+- **End-to-End Encryption**: Full implementation of 1024-bit RSA + AES-256-GCM encryption
+  - Automatic key exchange on connection
+  - Visual encryption indicators (🔒 icon)
+  - Transparent encryption for all messages
+  - Session-based key generation for perfect forward secrecy
+- **Test Improvements**: Enhanced test coverage and quality
+  - Updated to use idiomatic Rust struct initialization
+  - Fixed clippy warnings (using `is_none_or` instead of `map_or`)
+  - Added `quick_test.sh` script for rapid testing
+- **Documentation Updates**: Comprehensive documentation improvements
+  - Added security notices about RSA key sizes
+  - Enhanced README with key highlights section
+  - Updated test coverage information
+  - Added encryption test examples
+
+### Changed
+- Improved code quality with clippy recommendations
+- Updated integration tests for better maintainability
+
+## [0.2.0] - 2024-12-22
 
 ### Added
 - Custom error types (`ChatError`) for better error handling and debugging
