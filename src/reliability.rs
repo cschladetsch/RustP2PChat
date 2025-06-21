@@ -1,3 +1,70 @@
+//! Message reliability system with acknowledgments and retries.
+//!
+//! This module provides reliable message delivery for the P2P chat application
+//! using acknowledgment-based confirmation and automatic retry mechanisms.
+//! It ensures that important messages are delivered even in the presence of
+//! network issues or temporary connection problems.
+//!
+//! # Features
+//!
+//! - Automatic message acknowledgment tracking
+//! - Configurable retry attempts and delays
+//! - Message timeout handling
+//! - Background cleanup of expired messages
+//! - Delivery confirmation guarantees
+//!
+//! # Reliability Protocol
+//!
+//! 1. **Message Sending**: Messages are stored as "pending" until acknowledged
+//! 2. **Acknowledgment**: Recipients send back ACK messages with original message IDs
+//! 3. **Retry Logic**: Unacknowledged messages are retried after configurable delays
+//! 4. **Timeout Handling**: Messages that exceed retry limits are marked as failed
+//! 5. **Cleanup**: Expired and acknowledged messages are removed automatically
+//!
+//! # Configuration
+//!
+//! The reliability system is highly configurable:
+//! - **Retry Attempts**: How many times to retry failed messages (default: 3)
+//! - **Retry Delay**: Time between retry attempts (default: 2 seconds)
+//! - **ACK Timeout**: How long to wait for acknowledgments (default: 10 seconds)
+//! - **Cleanup Interval**: How often to clean expired messages (default: 30 seconds)
+//!
+//! # Examples
+//!
+//! ```rust,no_run
+//! use rust_p2p_chat::reliability::{ReliabilityManager, ReliabilityConfig};
+//! use rust_p2p_chat::protocol::Message;
+//! use tokio::sync::mpsc;
+//! use std::time::Duration;
+//!
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     // Create configuration
+//!     let config = ReliabilityConfig {
+//!         retry_attempts: 5,
+//!         retry_delay: Duration::from_secs(3),
+//!         ack_timeout: Duration::from_secs(15),
+//!         cleanup_interval: Duration::from_secs(60),
+//!     };
+//!     
+//!     // Create channel for outbound messages
+//!     let (outbound_tx, mut outbound_rx) = mpsc::channel(100);
+//!     
+//!     // Create reliability manager
+//!     let mut manager = ReliabilityManager::new(config, outbound_tx);
+//!     
+//!     // Send a message with reliability
+//!     let msg = Message::new_text("Important message".to_string());
+//!     manager.send_reliable_message(msg).await?;
+//!     
+//!     // Handle acknowledgments
+//!     let ack_msg = Message::new_acknowledgment(123);
+//!     manager.handle_acknowledgment(&ack_msg).await;
+//!     
+//!     Ok(())
+//! }
+//! ```
+
 use crate::error::Result;
 use crate::protocol::Message;
 use std::collections::HashMap;
@@ -6,12 +73,38 @@ use tokio::sync::mpsc;
 use tokio::time::interval;
 use tracing::{debug, error, trace, warn};
 
-/// Configuration for message reliability
+/// Configuration parameters for the message reliability system.
+///
+/// Controls all aspects of message delivery reliability including retry behavior,
+/// timeout handling, and cleanup intervals. These settings can be tuned based
+/// on network conditions and application requirements.
+///
+/// # Examples
+///
+/// ```rust
+/// use rust_p2p_chat::reliability::ReliabilityConfig;
+/// use std::time::Duration;
+///
+/// // Default configuration
+/// let config = ReliabilityConfig::default();
+///
+/// // Custom configuration for unreliable networks
+/// let custom_config = ReliabilityConfig {
+///     retry_attempts: 5,           // More retries
+///     retry_delay: Duration::from_secs(5),  // Longer delays
+///     ack_timeout: Duration::from_secs(20), // More time for ACKs
+///     cleanup_interval: Duration::from_secs(60), // Less frequent cleanup
+/// };
+/// ```
 #[derive(Clone, Debug)]
 pub struct ReliabilityConfig {
+    /// Maximum number of retry attempts for unacknowledged messages.
     pub retry_attempts: u8,
+    /// Time to wait between retry attempts.
     pub retry_delay: Duration,
+    /// Maximum time to wait for message acknowledgment before giving up.
     pub ack_timeout: Duration,
+    /// Interval between cleanup operations for expired messages.
     pub cleanup_interval: Duration,
 }
 
