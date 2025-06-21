@@ -30,6 +30,7 @@ See [Features](FEATURES.md) and [ChangeLog](CHANGELOG.md)
 - 🌐 **True P2P**: Direct peer connections, no central servers or intermediaries
 - 📁 **File Transfer**: Send files up to 100MB with progress tracking and auto-open
 - 🎨 **Rich Terminal UI**: Colorful interface with encryption status indicators
+- 🖥️ **GUI Support**: Optional graphical interface for enhanced user experience
 - 🔧 **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
 - 🍎 **macOS Installer**: Universal DMG installer for Intel and Apple Silicon Macs
 - 🎬 **Media Auto-Open**: Automatically open received images, videos, and documents
@@ -105,6 +106,7 @@ That's it! You're now chatting peer-to-peer with end-to-end encryption! 🎉
 ### Technical Features
 - **Async/Await Excellence**: Built on Tokio for high-performance async I/O
 - **Colorful Terminal UI**: ANSI color support for better user experience
+- **GUI Interface**: Optional graphical user interface with --gui flag
 - **Graceful Error Handling**: Robust connection management and clean disconnection
 - **Smart Connection Logic**: Simultaneous connect/listen with automatic fallback
 - **Low Latency**: Direct TCP connections ensure minimal message delay
@@ -140,8 +142,27 @@ cargo run -- --port 8080 --nickname Alice
 # Enable debug logging
 cargo run -- --port 8080 --debug
 
+# Launch with GUI interface
+cargo run -- --gui
+
+# Launch GUI and connect to peer
+cargo run -- --gui --connect 192.168.1.100:8080
+
 # Generate default config file
 cargo run -- config
+```
+
+#### Quick Build and Run Scripts
+For convenience, two shell scripts are provided in the root directory:
+
+```bash
+# Build the project
+./b
+
+# Build and run (passes all arguments to the application)
+./r
+./r --port 8080
+./r --gui --connect localhost:8080
 ```
 
 ### Starting a chat session

@@ -83,6 +83,26 @@ auto_open_media = true               # Automatically open received media files
 media_extensions = ["jpg", "png", "mp4", "pdf"]  # File types to auto-open
 ```
 
+### Graphical User Interface (GUI)
+
+The application includes an optional GUI mode for enhanced user experience:
+
+- **Native Window**: Cross-platform GUI using modern Rust GUI frameworks
+- **Real-time Updates**: Messages appear instantly in the chat window
+- **User-friendly Controls**: Buttons and text fields for easy interaction
+- **Visual Design**: Clean interface with proper spacing and layout
+- **Encryption Indicators**: Visual feedback for encryption status
+- **File Transfer Support**: Drag-and-drop or browse for files to send
+
+Launch GUI mode:
+```bash
+# Start GUI as listener
+./rust-p2p-chat --gui --port 8080
+
+# Start GUI and connect to peer
+./rust-p2p-chat --gui --connect 192.168.1.100:8080
+```
+
 ### End-to-End Encryption
 
 The application now features military-grade end-to-end encryption:
@@ -105,6 +125,10 @@ The application now features military-grade end-to-end encryption:
 ./rust-p2p-chat --port 8080 --nickname Alice --debug
 ./rust-p2p-chat --connect 192.168.1.100:8080 --no-encryption
 
+# Launch with GUI
+./rust-p2p-chat --gui
+./rust-p2p-chat --gui --connect 192.168.1.100:8080
+
 # Generate config
 ./rust-p2p-chat config
 ```
@@ -114,6 +138,7 @@ CLI Options:
 - `-c, --connect <ADDRESS>`: Peer address to connect to
 - `-n, --nickname <NAME>`: Set your nickname
 - `-d, --debug`: Enable debug logging
+- `-g, --gui`: Launch graphical user interface
 - `--no-encryption`: Disable encryption (not recommended)
 
 ### Error Handling

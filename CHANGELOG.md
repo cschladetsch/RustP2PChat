@@ -2,9 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2025-06-21
+## [Unreleased] - 2025-06-22
 
 ### Added
+- **Graphical User Interface (GUI)**: Optional GUI mode with --gui flag
+  - Cross-platform native window interface
+  - Real-time message updates in chat window
+  - User-friendly controls with buttons and text fields
+  - Visual encryption status indicators
+  - File transfer support with GUI controls
+  - Launch with `--gui` flag for enhanced user experience
+
+- **Shell Script Helpers**: Convenience scripts for building and running
+  - `./b` - Quick build script
+  - `./r` - Build and run script that passes all arguments to the application
+  - Streamlined development workflow
 - **macOS Installer System**: Complete macOS distribution support
   - Universal binary supporting both Intel and Apple Silicon Macs
   - Standard DMG installer with drag-to-Applications interface
