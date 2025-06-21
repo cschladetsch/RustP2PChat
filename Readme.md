@@ -4,7 +4,7 @@ A simple peer-to-peer chat application written in Rust using Tokio for async net
 
 ## Demo
 
-![Demo](resources/Demo.png)
+![Demo](resources/Demo.gif)
 
 ## Features
 

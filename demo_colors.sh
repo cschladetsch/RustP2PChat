@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo -e "\x1b[1;36m╔═══════════════════════════════════════════════════════════╗\x1b[0m"
+echo -e "\x1b[1;36m║           \x1b[1;93m✨ P2P Chat Color Preview ✨\x1b[1;36m                  ║\x1b[0m"
+echo -e "\x1b[1;36m╚═══════════════════════════════════════════════════════════╝\x1b[0m"
+echo ""
+echo -e "\x1b[32mSystem Messages:\x1b[0m"
+echo -e "  \x1b[92m✓ Connected to peer at: 127.0.0.1:8081\x1b[0m"
+echo -e "  \x1b[93mWaiting for peer to connect...\x1b[0m"
+echo -e "  \x1b[91mPeer disconnected\x1b[0m"
+echo ""
+echo -e "\x1b[32mChat Messages:\x1b[0m"
+echo -e "  \x1b[1m\x1b[96mPeer:\x1b[0m Hello from the other side!"
+echo -e "  \x1b[1m\x1b[92mYou:\x1b[0m Hi there!"
+echo ""
+echo -e "\x1b[90mRun ./test_tmux.sh to see it in action!\x1b[0m"
