@@ -1,6 +1,6 @@
 pub mod colors;
 pub mod error;
-pub mod protocol;  
+pub mod protocol;
 pub mod config;
 pub mod peer;
 pub mod encryption;
@@ -8,47 +8,64 @@ pub mod file_transfer;
 pub mod commands;
 
 use std::io;
+use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncReadExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::sync::mpsc;
+use tokio::time::{interval, Duration};
 use futures::future::try_join;
 use tokio::select;
+use tracing::{info, warn, error, debug};
 
 use crate::colors::Colors;
 use crate::error::{ChatError, Result};
 use crate::protocol::{Message, MessageType, Command, StatusUpdate};
 use crate::config::Config;
+use crate::peer::{PeerManager, Peer, PeerInfo};
 use crate::file_transfer::FileTransfer;
 use crate::commands::CommandHandler;
 
-
-// Simple P2P Chat implementation
 pub struct P2PChat {
     config: Config,
+    peer_manager: PeerManager,
+    command_handler: CommandHandler,
+    file_transfer: FileTransfer,
 }
 
 impl P2PChat {
     pub fn new(config: Config) -> Result<Self> {
-        Ok(Self { config })
+        let (peer_manager, _) = PeerManager::new();
+        let command_handler = CommandHandler::new(config.clone());
+        let file_transfer = FileTransfer::new(config.max_file_size_mb);
+
+        Ok(Self {
+            config,
+            peer_manager,
+            command_handler,
+            file_transfer,
+        })
     }
 
     pub async fn start(&mut self, listen_port: u16, peer_address: Option<String>) -> Result<()> {
+        // Start listening
         let addr = format!("0.0.0.0:{}", listen_port);
         let listener = TcpListener::bind(&addr).await
             .map_err(|e| ChatError::BindFailed(addr.clone(), e))?;
         
         println!("{}Listening on: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
-        println!("{}Type /help for available commands{}", Colors::DIM, Colors::RESET);
 
         if let Some(peer_addr) = peer_address {
+            // Try to connect while also listening
             self.connect_or_accept(listener, &peer_addr).await?;
         } else {
+            // Just listen
             println!("{}Waiting for peer to connect...{}", Colors::YELLOW, Colors::RESET);
             let (stream, peer_addr) = listener.accept().await?;
             println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, peer_addr, Colors::RESET);
-            handle_enhanced_connection(stream, self.config.clone()).await?;
+            self.handle_peer_connection(stream, peer_addr).await?;
         }
 
         Ok(())
@@ -58,67 +75,156 @@ impl P2PChat {
         println!("{}Attempting to connect to peer at: {}{}", Colors::YELLOW, peer_addr, Colors::RESET);
         
         select! {
+            // Accept incoming connections
             result = listener.accept() => {
                 let (stream, addr) = result?;
                 println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
-                handle_enhanced_connection(stream, self.config.clone()).await?;
+                self.handle_peer_connection(stream, addr).await?;
             }
+            // Try to connect to peer
             result = TcpStream::connect(peer_addr) => {
                 match result {
                     Ok(stream) => {
                         let addr = stream.peer_addr()?;
                         println!("{}✓ Connected to peer at: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
-                        handle_enhanced_connection(stream, self.config.clone()).await?;
+                        self.handle_peer_connection(stream, addr).await?;
                     }
                     Err(e) => {
-                        println!("{}Failed to connect: {}. Waiting for incoming connection...{}", 
-                                Colors::YELLOW, e, Colors::RESET);
+                        warn!("Failed to connect to peer: {}. Waiting for incoming connection...", e);
                         let (stream, addr) = listener.accept().await?;
                         println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
-                        handle_enhanced_connection(stream, self.config.clone()).await?;
+                        self.handle_peer_connection(stream, addr).await?;
                     }
                 }
             }
         }
         Ok(())
     }
-}
 
-// Enhanced connection handler with new features
-pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Result<()> {
-    let (reader, writer) = stream.into_split();
-    let (tx, rx) = mpsc::channel(100);
-    
-    // Spawn tasks
-    let read_handle = tokio::spawn(read_enhanced_messages(reader, config.buffer_size));
-    let write_handle = tokio::spawn(write_enhanced_messages(writer, rx));
-    let input_handle = tokio::spawn(handle_enhanced_input(tx, config));
-    
-    // Wait for any task to complete
-    tokio::select! {
-        _ = read_handle => {},
-        _ = write_handle => {},
-        _ = input_handle => {},
+    async fn handle_peer_connection(&mut self, stream: TcpStream, addr: SocketAddr) -> Result<()> {
+        let peer_id = format!("{}", addr);
+        let (tx, rx) = mpsc::channel(100);
+        
+        // For now, skip full peer manager integration
+
+        // Start heartbeat
+        let heartbeat_tx = tx.clone();
+        let heartbeat_interval = self.config.heartbeat_interval_secs;
+        tokio::spawn(async move {
+            let mut interval = interval(Duration::from_secs(heartbeat_interval));
+            loop {
+                interval.tick().await;
+                if heartbeat_tx.send(Message::new_heartbeat()).await.is_err() {
+                    break;
+                }
+            }
+        });
+
+        // Split the stream
+        let (reader, writer) = stream.into_split();
+        
+        // Start tasks
+        let peer_id_clone = peer_id.clone();
+        let config = self.config.clone();
+        let read_handle = tokio::spawn(async move {
+            read_messages(reader, peer_id_clone, config.buffer_size).await
+        });
+        
+        let write_handle = tokio::spawn(async move {
+            write_messages(writer, rx).await
+        });
+        
+        let input_handle = tokio::spawn(self.handle_user_input(tx));
+
+        // Wait for any task to complete
+        tokio::select! {
+            _ = read_handle => {},
+            _ = write_handle => {},
+            _ = input_handle => {},
+        }
+
+        // Remove peer when disconnected
+        self.peer_manager.remove_peer(&peer_id).await;
+        println!("\n{}Peer {} disconnected{}", Colors::RED, peer_id, Colors::RESET);
+
+        Ok(())
     }
-    
-    Ok(())
+
+    async fn handle_user_input(&mut self, tx: mpsc::Sender<Message>) -> Result<()> {
+        let reader = BufReader::new(tokio::io::stdin());
+        let mut lines = reader.lines();
+        
+        println!("{}Type messages and press Enter to send (Ctrl+C to exit){}", Colors::DIM, Colors::RESET);
+        println!("{}Type /help for available commands{}", Colors::DIM, Colors::RESET);
+        print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
+        io::Write::flush(&mut io::stdout())?;
+        
+        while let Ok(Some(line)) = lines.next_line().await {
+            if line.is_empty() {
+                print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
+                io::Write::flush(&mut io::stdout())?;
+                continue;
+            }
+
+            // Check if it's a command
+            if let Some(command) = CommandHandler::parse_command(&line) {
+                match command {
+                    Command::Quit => break,
+                    Command::SendFile(path) => {
+                        // Handle file sending
+                        match self.file_transfer.prepare_file(&PathBuf::from(&path)).await {
+                            Ok(file_info) => {
+                                let message = Message {
+                                    id: rand::random(),
+                                    timestamp: std::time::SystemTime::now(),
+                                    msg_type: MessageType::File(file_info),
+                                };
+                                tx.send(message).await.map_err(|_| ChatError::PeerDisconnected)?;
+                                println!("{}✓ File sent successfully{}", Colors::GREEN, Colors::RESET);
+                            }
+                            Err(e) => {
+                                println!("{}✗ Failed to send file: {}{}", Colors::RED, e, Colors::RESET);
+                            }
+                        }
+                    }
+                    _ => {
+                        match self.command_handler.handle_command(command, &self.peer_manager).await {
+                            Ok(response) => println!("{}", response),
+                            Err(e) => println!("{}Error: {}{}", Colors::RED, e, Colors::RESET),
+                        }
+                    }
+                }
+            } else {
+                // Regular message - send as plain text for backward compatibility
+                // Regular message - send as new protocol
+                let _ = tx.send(Message::new_text(line)).await;
+            }
+            
+            print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
+            io::Write::flush(&mut io::stdout())?;
+        }
+        
+        Ok(())
+    }
 }
 
-async fn read_enhanced_messages(mut reader: OwnedReadHalf, buffer_size: usize) -> Result<()> {
+async fn read_messages(mut reader: OwnedReadHalf, peer_id: String, buffer_size: usize) -> Result<()> {
     let mut buffer = vec![0; buffer_size];
     
     loop {
         match reader.read(&mut buffer).await {
             Ok(0) => {
-                println!("\n{}Peer disconnected{}", Colors::RED, Colors::RESET);
+                info!("Peer {} disconnected", peer_id);
                 return Ok(());
             }
             Ok(n) => {
-                // Try new protocol first
+                // Try to deserialize as new protocol
                 match Message::deserialize(&buffer[..n]) {
-                    Ok(message) => handle_message(message).await?,
+                    Ok(message) => {
+                        handle_incoming_message(message, &peer_id).await?;
+                    }
                     Err(_) => {
-                        // Fallback to plain text
+                        // Fallback to plain text for backward compatibility
                         let text = String::from_utf8_lossy(&buffer[..n]).trim_end().to_string();
                         print!("\r\x1b[2K");
                         println!("{}{}Peer:{} {}", Colors::BOLD, Colors::BRIGHT_CYAN, Colors::RESET, text);
@@ -128,14 +234,14 @@ async fn read_enhanced_messages(mut reader: OwnedReadHalf, buffer_size: usize) -
                 }
             }
             Err(e) => {
-                eprintln!("\nError reading: {}", e);
+                error!("Error reading from peer {}: {}", peer_id, e);
                 return Err(e.into());
             }
         }
     }
 }
 
-async fn handle_message(message: Message) -> Result<()> {
+async fn handle_incoming_message(message: Message, peer_id: &str) -> Result<()> {
     match message.msg_type {
         MessageType::Text(text) => {
             print!("\r\x1b[2K");
@@ -144,35 +250,44 @@ async fn handle_message(message: Message) -> Result<()> {
             io::Write::flush(&mut io::stdout())?;
         }
         MessageType::File(file_info) => {
-            println!("\n{}📁 Receiving file: {} ({} bytes){}", 
-                    Colors::YELLOW, file_info.name, file_info.size, Colors::RESET);
+            println!("\n{}Receiving file: {} ({} bytes){}", Colors::YELLOW, file_info.name, file_info.size, Colors::RESET);
+            // File saving would be handled here
+        }
+        MessageType::Command(cmd) => {
+            debug!("Received command from {}: {:?}", peer_id, cmd);
         }
         MessageType::Status(status) => {
             match status {
                 StatusUpdate::TransferProgress(name, current, total) => {
                     let percent = (current as f64 / total as f64) * 100.0;
-                    print!("\r{}Progress {}: {:.1}%{}", Colors::YELLOW, name, percent, Colors::RESET);
+                    print!("\r{}Transferring {}: {:.1}%{}", Colors::YELLOW, name, percent, Colors::RESET);
                     io::Write::flush(&mut io::stdout())?;
                 }
                 _ => {}
             }
         }
-        _ => {}
+        MessageType::Heartbeat => {
+            debug!("Heartbeat from {}", peer_id);
+        }
+        MessageType::Acknowledgment(id) => {
+            debug!("Message {} acknowledged by {}", id, peer_id);
+        }
     }
     Ok(())
 }
 
-async fn write_enhanced_messages(mut writer: OwnedWriteHalf, mut rx: mpsc::Receiver<Message>) -> Result<()> {
+async fn write_messages(mut writer: OwnedWriteHalf, mut rx: mpsc::Receiver<Message>) -> Result<()> {
     while let Some(message) = rx.recv().await {
+        // For backward compatibility, send text messages as plain strings
         match &message.msg_type {
             MessageType::Text(text) => {
-                // Send as plain text for compatibility
+                // Send as plain text for backward compatibility
                 let plain = format!("{}\n", text);
                 writer.write_all(plain.as_bytes()).await?;
                 writer.flush().await?;
             }
             _ => {
-                // Send using new protocol
+                // Send other types using the new protocol
                 if let Ok(data) = message.serialize() {
                     writer.write_all(&data).await?;
                     writer.flush().await?;
@@ -183,91 +298,31 @@ async fn write_enhanced_messages(mut writer: OwnedWriteHalf, mut rx: mpsc::Recei
     Ok(())
 }
 
-async fn handle_enhanced_input(tx: mpsc::Sender<Message>, config: Config) -> Result<()> {
-    let reader = BufReader::new(tokio::io::stdin());
-    let mut lines = reader.lines();
-    let _command_handler = CommandHandler::new(config.clone());
-    let file_transfer = FileTransfer::new(config.max_file_size_mb);
-    
-    println!("{}Type messages and press Enter to send (Ctrl+C to exit){}", Colors::DIM, Colors::RESET);
-    print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
-    io::Write::flush(&mut io::stdout())?;
-    
-    while let Ok(Some(line)) = lines.next_line().await {
-        if line.is_empty() {
-            print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
-            io::Write::flush(&mut io::stdout())?;
-            continue;
-        }
-
-        // Check for commands
-        if let Some(command) = CommandHandler::parse_command(&line) {
-            match command {
-                Command::Quit => break,
-                Command::Help => {
-                    println!("{}", get_help_text());
-                }
-                Command::SendFile(path) => {
-                    match file_transfer.prepare_file(&PathBuf::from(&path)).await {
-                        Ok(file_info) => {
-                            let msg = Message {
-                                id: rand::random(),
-                                timestamp: std::time::SystemTime::now(),
-                                msg_type: MessageType::File(file_info),
-                            };
-                            tx.send(msg).await.map_err(|_| ChatError::PeerDisconnected)?;
-                            println!("{}✓ File sent{}", Colors::GREEN, Colors::RESET);
-                        }
-                        Err(e) => println!("{}✗ Error: {}{}", Colors::RED, e, Colors::RESET),
-                    }
-                }
-                _ => {
-                    println!("{}Command not yet implemented{}", Colors::YELLOW, Colors::RESET);
-                }
-            }
-        } else {
-            // Regular message
-            let msg = Message::new_text(line);
-            tx.send(msg).await.map_err(|_| ChatError::PeerDisconnected)?;
-        }
-        
-        print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
-        io::Write::flush(&mut io::stdout())?;
-    }
-    
-    Ok(())
-}
-
-fn get_help_text() -> &'static str {
-    r#"Available commands:
-  /help, /?      - Show this help
-  /quit, /exit   - Exit the chat
-  /send <file>   - Send a file
-  /info          - Show connection info
-  /nick <name>   - Set nickname"#
-}
-
-// Keep original simple implementation for backward compatibility
+// Keep backward compatibility
 pub struct P2PPeer {
-    pub listen_port: u16,
-    pub peer_address: Option<String>,
+    chat: P2PChat,
+    listen_port: u16,
+    peer_address: Option<String>,
 }
 
 impl P2PPeer {
     pub fn new(listen_port: u16, peer_address: Option<String>) -> Self {
-        Self { listen_port, peer_address }
+        let config = Config::default();
+        let chat = P2PChat::new(config).expect("Failed to create chat");
+        Self {
+            chat,
+            listen_port,
+            peer_address,
+        }
     }
 
-    pub async fn start(&self) -> io::Result<()> {
-        let config = Config::default();
-        let mut chat = P2PChat::new(config)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-        chat.start(self.listen_port, self.peer_address.clone()).await
+    pub async fn start(&mut self) -> io::Result<()> {
+        self.chat.start(self.listen_port, self.peer_address.clone()).await
             .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
     }
 }
 
-// Keep the original handle_connection for tests
+// Re-export the original handle_connection for backward compatibility
 pub async fn handle_connection(stream: TcpStream) -> io::Result<()> {
     let (reader, writer) = stream.into_split();
     
@@ -290,6 +345,7 @@ pub async fn handle_connection(stream: TcpStream) -> io::Result<()> {
 async fn read_messages_simple(mut reader: OwnedReadHalf) -> io::Result<()> {
     loop {
         let mut buffer = vec![0; 1024];
+        
         match reader.read(&mut buffer).await {
             Ok(0) => {
                 println!("\n{}Peer disconnected{}", Colors::RED, Colors::RESET);
@@ -321,6 +377,7 @@ async fn write_messages_simple(mut writer: OwnedWriteHalf) -> io::Result<()> {
     while let Ok(Some(line)) = lines.next_line().await {
         if !line.is_empty() {
             let message = format!("{}\n", line);
+            
             if let Err(e) = writer.write_all(message.as_bytes()).await {
                 eprintln!("\nError sending message: {}", e);
                 return Err(e);

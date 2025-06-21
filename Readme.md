@@ -10,6 +10,20 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 
 ![Demo](resources/Demo1.gif)
 
+## New Features Added
+
+### Recently Implemented
+- **Custom Error Types**: Replaced generic errors with specific ChatError types
+- **Enhanced Message Protocol**: Support for text, files, commands, and status updates
+- **File Transfer**: Send files up to 100MB (configurable) with progress tracking
+- **Command System**: Built-in commands like /help, /quit, /send
+- **Configuration Support**: TOML-based config files with customizable settings
+- **CLI Arguments**: Full command-line interface with clap
+- **Logging**: Configurable logging levels with tracing
+- **Large Buffer Support**: 8KB message buffer (configurable)
+- **Connection Heartbeat**: Keep-alive mechanism for connection monitoring
+- **TLS Encryption Ready**: Infrastructure for encrypted connections
+
 ## Features
 
 ### Core Capabilities
@@ -39,10 +53,19 @@ cargo run
 #### Command-line Mode
 ```bash
 # Start as listener on specific port
-cargo run -- 8080
+cargo run -- --port 8080
 
-# Connect to a peer directly
-cargo run -- 8080 192.168.1.100:9000
+# Connect to a peer directly  
+cargo run -- --connect 192.168.1.100:8080
+
+# With nickname
+cargo run -- --port 8080 --nickname Alice
+
+# Enable debug logging
+cargo run -- --port 8080 --debug
+
+# Generate default config file
+cargo run -- config
 ```
 
 ### Starting a chat session
