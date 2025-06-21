@@ -21,17 +21,28 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 
 ### Technical Features
 - **Async/Await Excellence**: Built on Tokio for high-performance async I/O
-- **Thread-safe Design**: Uses `Arc<Mutex<TcpStream>>` for safe concurrent access
+- **Colorful Terminal UI**: ANSI color support for better user experience
 - **Graceful Error Handling**: Robust connection management and clean disconnection
-- **Efficient Message Buffering**: Handles messages of any size with streaming support
+- **Smart Connection Logic**: Simultaneous connect/listen with automatic fallback
 - **Low Latency**: Direct TCP connections ensure minimal message delay
+- **Command-line Interface**: Supports both interactive mode and CLI arguments
 
 ## Usage
 
 ### Running the application
 
+#### Interactive Mode
 ```bash
 cargo run
+```
+
+#### Command-line Mode
+```bash
+# Start as listener on specific port
+cargo run -- 8080
+
+# Connect to a peer directly
+cargo run -- 8080 192.168.1.100:9000
 ```
 
 ### Starting a chat session
@@ -84,7 +95,9 @@ Connected to peer!
 
 ### Sending messages
 
-Once connected, type messages and press Enter to send. Messages from the peer will appear prefixed with "Peer:".
+Once connected, type messages and press Enter to send. Messages are displayed with color-coded prefixes:
+- Your messages: "You:" in green
+- Peer messages: "Peer:" in cyan
 
 To exit, press Ctrl+C.
 
@@ -107,21 +120,24 @@ This application implements a **symmetric peer-to-peer architecture** where:
 
 #### Connection Management
 - **TCP Socket Handling**: Direct TCP stream manipulation for low-level control
-- **Shared State**: Uses `Arc<Mutex<TcpStream>>` for thread-safe stream access
+- **Stream Splitting**: Uses `stream.into_split()` for separate read/write halves
 - **Concurrent I/O**: Separate async tasks for reading and writing operations
 - **Graceful Shutdown**: Proper resource cleanup on disconnection
+- **Simultaneous Connect/Listen**: Can try connecting while accepting connections
 
 #### Message Protocol
 - **Simple Text Protocol**: UTF-8 encoded messages with newline delimiters
-- **Buffered I/O**: Efficient buffering with `BufReader` and `BufWriter`
+- **Direct Async I/O**: Uses `AsyncReadExt` and `AsyncWriteExt` for socket operations
 - **Stream Processing**: Handles partial reads and message fragmentation
-- **No Message Size Limits**: Can handle messages of arbitrary length
+- **Message Buffer**: Uses 1024-byte buffer for reading messages
+- **Stdin Buffering**: Uses `BufReader` for efficient console input
 
 #### Error Handling Strategy
 - **Connection Resilience**: Gracefully handles network interruptions
 - **Input Validation**: Sanitizes user input and peer addresses
 - **Comprehensive Error Types**: Detailed error reporting for debugging
 - **Recovery Mechanisms**: Automatic cleanup on peer disconnection
+- **Port Conflict Detection**: Helpful diagnostics when port is already in use
 
 ### Performance Characteristics
 - **Low Memory Footprint**: Minimal runtime overhead (~2-5 MB)
@@ -157,14 +173,14 @@ cargo test -- --nocapture
 
 ### Test Coverage
 
-The test suite includes:
-- Unit tests for server and client creation
-- TCP connection establishment tests
-- Message exchange verification
-- Bidirectional communication tests
-- Large message handling
-- Multiple sequential message tests
+The test suite demonstrates:
+- TCP connection establishment
+- Message exchange between peers
+- Bidirectional communication
 - Connection error handling
+- Multiple message scenarios
+
+Note: The integration tests serve as examples of how to use the chat functionality programmatically.
 
 ## Project Structure
 
@@ -173,10 +189,11 @@ rust-p2p-chat/
 ├── Cargo.toml           # Project dependencies and metadata
 ├── Readme.md            # This documentation
 ├── resources/           # Demo and documentation assets
-│   └── Demo.gif        # Animated demonstration
+│   └── Demo1.gif       # Animated demonstration
 ├── src/
 │   ├── main.rs         # Application entry point and CLI interface
-│   └── lib.rs          # Core P2P chat implementation
+│   ├── lib.rs          # Core P2P chat implementation
+│   └── colors.rs       # ANSI color support for terminal UI
 └── tests/
     ├── integration_tests.rs      # Complex multi-peer scenarios
     └── simple_integration_test.rs # Basic connection and messaging tests
@@ -186,7 +203,8 @@ rust-p2p-chat/
 
 - **`main.rs`**: Handles user interaction, connection setup, and message I/O loops
 - **`lib.rs`**: Implements the P2P protocol, connection management, and async operations
-- **Integration Tests**: Verify end-to-end functionality including edge cases
+- **`colors.rs`**: Provides ANSI color codes for enhanced terminal output
+- **Integration Tests**: Demonstrate usage patterns and test scenarios
 
 ## Testing Locally
 
