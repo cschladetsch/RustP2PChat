@@ -2,7 +2,21 @@
 
 ## Overview
 
-This document provides technical API documentation for developers who want to integrate with or extend the Rust P2P Chat application.
+This document provides technical API documentation for developers who want to integrate with or extend the Rust P2P Chat application. The project includes comprehensive inline documentation for all modules and APIs.
+
+## Documentation Status
+
+✅ **Complete API Documentation**: All public modules, functions, and types have detailed rustdoc comments with examples  
+✅ **Security Documentation**: Security considerations and best practices included throughout  
+✅ **Thread Safety Documentation**: Concurrency guarantees and usage patterns documented  
+✅ **Error Handling Documentation**: Detailed error types and patterns with examples  
+✅ **Working Code Examples**: All examples are tested and functional  
+
+**Generate API Documentation**:
+```bash
+cargo doc --open
+# View at: target/doc/rust_p2p_chat/index.html
+```
 
 ## Core Types
 
@@ -390,4 +404,38 @@ OPTIONS:
 
 SUBCOMMANDS:
     config    Generate and save default configuration
+```
+
+## Module Documentation
+
+All source modules include comprehensive inline documentation. Key modules:
+
+### Core Modules
+- **`src/lib.rs`**: Core P2P chat implementation with connection handling and encryption integration
+- **`src/main.rs`**: CLI interface and application entry point with argument parsing
+- **`src/config.rs`**: Configuration management with TOML serialization and validation
+- **`src/error.rs`**: Custom error types with user-friendly messages and error chains
+
+### Communication Modules  
+- **`src/protocol.rs`**: Message types and protocol definitions with serialization
+- **`src/peer.rs`**: Peer management and connection tracking with thread-safe operations
+- **`src/reliability.rs`**: Message reliability with acknowledgments and retry mechanisms
+- **`src/commands.rs`**: Command parsing and execution with alias support
+
+### Feature Modules
+- **`src/file_transfer.rs`**: File transfer with SHA-256 verification and cross-platform file opening
+- **`src/encryption.rs`**: End-to-end encryption using RSA + AES-256-GCM
+- **`src/colors.rs`**: ANSI color support for enhanced terminal output
+
+### Documentation Access
+```bash
+# Generate complete API documentation
+cargo doc --open
+
+# Documentation includes:
+# - Security considerations for all modules
+# - Working code examples 
+# - Thread safety guarantees
+# - Error handling patterns
+# - Cross-platform compatibility notes
 ```

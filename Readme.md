@@ -31,8 +31,10 @@ See [Features](FEATURES.md) and [ChangeLog](CHANGELOG.md)
 - 📁 **File Transfer**: Send files up to 100MB with progress tracking and auto-open
 - 🎨 **Rich Terminal UI**: Colorful interface with encryption status indicators
 - 🔧 **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
+- 🍎 **macOS Installer**: Universal DMG installer for Intel and Apple Silicon Macs
 - 🎬 **Media Auto-Open**: Automatically open received images, videos, and documents
 - 💾 **Smart Downloads**: Files saved to system Downloads folder with verification
+- 🧪 **Comprehensive Testing**: 160+ tests across 10 categories with extensive coverage
 
 ## What Makes This Special?
 
@@ -395,26 +397,26 @@ The project includes several testing and demo scripts in the `shell/` directory:
 
 ### Test Coverage
 
-The project now includes a **comprehensive test suite with 160+ individual tests** across 10 major categories:
+The project now includes a **comprehensive test suite with 183+ individual tests** across 10 major categories:
 
-**Comprehensive Test Suite (160+ tests total):**
+**Comprehensive Test Suite (183+ tests total):**
 
 1. **File Transfer Tests** (9 tests) - Hash verification, size limits, unicode filenames, directory handling
-2. **Configuration Tests** (10 tests) - Defaults, validation, serialization, path resolution
+2. **Configuration Tests** (10 tests) - Defaults, validation, serialization, path resolution  
 3. **Protocol Tests** (14 tests) - Message serialization, all message types, large data handling
 4. **Command Tests** (20 tests) - Command parsing, handler functionality, edge cases
 5. **Error Handling Tests** (34 tests) - All error types, user-friendly messages, source chains
 6. **Reliability Tests** (15 tests) - Message acknowledgments, retries, timeout handling
-7. **Concurrent Tests** (7 tests) - Stress testing, graceful shutdown, race conditions
-8. **Peer Management Tests** (15 tests) - Concurrent access, edge cases, IPv6 support
-9. **Encryption Tests** (39 tests) - E2E encryption, key exchange, signing, edge cases
+7. **Concurrent Tests** (7 tests) - Stress testing with 20+ connections, race conditions
+8. **Peer Management Tests** (15 tests) - Concurrent access, IPv6 support, edge cases
+9. **Encryption Tests** (39 tests) - E2E encryption, RSA key exchange, AES-256-GCM
 10. **Integration Tests** (20 tests) - Real-world scenarios, file workflows, system integration
 
 **Key Test Features:**
 - **Edge Case Coverage**: Unicode handling, large files, concurrent operations
 - **Security Testing**: Comprehensive encryption, key exchange, signing verification
 - **Error Scenarios**: Network failures, invalid inputs, permission issues
-- **Performance Testing**: Stress tests with 100+ concurrent operations
+- **Performance Testing**: Stress tests with 20+ concurrent connections
 - **Real-world Workflows**: File transfers, configuration persistence, graceful shutdown
 
 **Legacy Tests:**

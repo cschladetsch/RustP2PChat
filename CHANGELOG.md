@@ -25,14 +25,28 @@ All notable changes to this project will be documented in this file.
   - Encryption Tests (39): E2E encryption, key exchange, signing
   - Integration Tests (20): Real-world scenarios, file workflows
 
-- **Enhanced Documentation**: Complete documentation overhaul
-  - Enhanced README with macOS installer instructions
-  - Comprehensive FEATURES.md with installation & distribution section
-  - Updated API.md with macOS installer APIs
-  - Complete command reference with examples
-  - Platform-specific build instructions for Windows, Ubuntu/WSL, and macOS
-  - Security best practices and considerations
-  - Performance optimization guidelines
+- **Comprehensive Documentation System**: Complete documentation overhaul at all levels
+  - **Inline Code Documentation**: All modules, functions, and types have detailed rustdoc comments
+    - Security considerations and best practices included throughout
+    - Working code examples for all major APIs  
+    - Thread safety and concurrency documentation
+    - Detailed error handling patterns and examples
+  - **Module Documentation**: Complete coverage of all source modules
+    - `src/lib.rs`, `src/config.rs`, `src/error.rs`, `src/file_transfer.rs`
+    - `src/colors.rs`, `src/commands.rs`, `src/protocol.rs`, `src/peer.rs`
+    - `src/reliability.rs`, `src/encryption.rs` with security focus
+  - **Directory Documentation**: README files for major directories
+    - `src/README.md`: Source code architecture and development guide
+    - `tests/README.md`: Test suite documentation with running instructions
+    - `shell/README.md`: Shell scripts documentation and usage guide
+  - **Project Documentation**: Enhanced core documentation files
+    - Enhanced README with macOS installer instructions and test coverage
+    - Comprehensive FEATURES.md with installation & distribution section
+    - Updated API.md with documentation status and rustdoc generation
+    - Complete DOCUMENTATION.md overview and navigation guide
+    - Platform-specific build instructions for Windows, Ubuntu/WSL, and macOS
+    - Security best practices and considerations throughout
+    - Performance optimization guidelines and profiling instructions
 
 - **Auto-open Media Files**: Automatically open received media files after download
   - Platform-specific implementation (macOS: `open`, Windows: `start`, Linux: `xdg-open`)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides comprehensive technical documentation for all features implemented in the Rust P2P Chat application. For quick start guides and basic usage, see the [README](Readme.md).
+This document provides comprehensive technical documentation for all features implemented in the Rust P2P Chat application. The project includes 183+ tests across 10 categories, complete documentation coverage, and a macOS installer system. For quick start guides and basic usage, see the [README](Readme.md).
 
 ## Table of Contents
 
@@ -535,22 +535,81 @@ RUST_LOG=debug cargo test -- --nocapture
 
 ### Test Categories
 
-1. **Unit Tests** (15 tests):
-   - Core library functionality
-   - Peer connection handling
-   - Configuration defaults
-   - Command parsing
+The project includes a **comprehensive test suite with 183+ individual tests** across 10 major categories, providing extensive validation of all functionality:
 
-2. **Integration Tests** (7 tests):
-   - End-to-end communication
-   - File transfer scenarios
-   - Error handling
-   - Protocol compatibility
+1. **File Transfer Tests** (9 tests):
+   - Hash verification and integrity checking
+   - Size limits and large file handling
+   - Unicode filename support
+   - Directory creation and path handling
+   - Empty file edge cases
 
-3. **Security Tests**:
-   - Encryption/decryption cycles
-   - Key exchange protocols
-   - Hash verification
+2. **Configuration Tests** (10 tests):
+   - Default value validation
+   - TOML serialization/deserialization
+   - Path resolution and directory handling
+   - Custom configuration scenarios
+   - Validation and error handling
+
+3. **Protocol Tests** (14 tests):
+   - Message serialization for all types
+   - Large data handling (1MB+ messages)
+   - Unicode content support
+   - Binary protocol compatibility
+   - Edge case message handling
+
+4. **Command Tests** (20 tests):
+   - Command parsing with aliases
+   - Parameter handling and validation
+   - Error scenarios and edge cases
+   - Help text generation
+   - Command execution workflows
+
+5. **Error Handling Tests** (34 tests):
+   - All ChatError variant coverage
+   - User-friendly error messages
+   - Error source chain validation
+   - Error display formatting
+   - Edge case error scenarios
+
+6. **Reliability Tests** (15 tests):
+   - Message acknowledgment systems
+   - Retry mechanisms and timeouts
+   - Network failure simulation
+   - Message ordering guarantees
+   - Delivery confirmation
+
+7. **Concurrent Tests** (7 tests):
+   - Stress testing with 20+ connections
+   - Race condition prevention
+   - Graceful shutdown handling
+   - Resource cleanup verification
+   - Performance under load
+
+8. **Peer Management Tests** (15 tests):
+   - Concurrent peer access
+   - IPv6 address support
+   - Special character handling
+   - Connection lifecycle management
+   - Peer metadata tracking
+
+9. **Encryption Tests** (39 tests):
+   - End-to-end encryption workflows
+   - RSA key exchange protocols
+   - AES-256-GCM encryption/decryption
+   - Key validation and verification
+   - Security edge cases
+
+10. **Integration Tests** (20 tests):
+    - Real-world usage scenarios
+    - File transfer workflows
+    - Configuration persistence
+    - Network simulation
+    - System integration testing
+
+**Legacy Tests**:
+- **Unit Tests** (3): Core library functionality
+- **Simple Integration Tests** (7): Basic connection and messaging
 
 ### Code Quality
 
@@ -567,6 +626,58 @@ cargo doc --open
 # Check for unused dependencies
 cargo machete
 ```
+
+### Documentation System
+
+The project includes comprehensive documentation at multiple levels:
+
+#### **Inline Code Documentation**
+- **Complete API Documentation**: All public modules, functions, and types have detailed rustdoc comments
+- **Security Considerations**: Important security notes and best practices included
+- **Code Examples**: Working examples for all major APIs
+- **Error Documentation**: Detailed error types and handling patterns
+- **Thread Safety**: Concurrency guarantees and usage patterns documented
+
+**Module Documentation Coverage**:
+- `src/lib.rs`: Core P2P chat implementation with connection handling
+- `src/config.rs`: Configuration management and validation
+- `src/error.rs`: Error handling and user-friendly error types
+- `src/file_transfer.rs`: File transfer with integrity verification and security notes
+- `src/colors.rs`: ANSI color support for terminal UI
+- `src/commands.rs`: Command parsing and execution system
+- `src/protocol.rs`: Message types and protocol definitions
+- `src/peer.rs`: Peer management and connection tracking
+- `src/reliability.rs`: Message reliability with acknowledgments
+- `src/encryption.rs`: End-to-end encryption implementation
+
+#### **Directory Documentation**
+- **`src/README.md`**: Complete source code overview with architecture details
+- **`tests/README.md`**: Test suite documentation with running instructions
+- **`shell/README.md`**: Shell scripts documentation and usage guide
+
+#### **Project Documentation**
+- **`README.md`**: Main project documentation with quick start and examples
+- **`FEATURES.md`**: Comprehensive technical feature documentation
+- **`API.md`**: Developer API reference and integration guide
+- **`DOCUMENTATION.md`**: Documentation overview and structure guide
+- **`CHANGELOG.md`**: Version history and release notes
+- **`macos-installer.md`**: macOS installer creation and deployment guide
+
+#### **Generated Documentation**
+```bash
+# Generate and view rustdoc documentation
+cargo doc --open
+
+# Available at: target/doc/rust_p2p_chat/index.html
+# Includes: All public APIs, examples, security notes, and implementation details
+```
+
+#### **Documentation Standards**
+- **Working Examples**: All code examples are tested and functional
+- **Cross-Platform Coverage**: Platform-specific instructions for Windows, macOS, Linux
+- **Security Focus**: Security considerations prominently documented
+- **Progressive Complexity**: Documentation flows from basic to advanced usage
+- **Visual Navigation**: Emojis and clear structure for easy navigation
 
 ### Adding Features
 
