@@ -55,11 +55,11 @@
 //!     
 //!     // Send a message with reliability
 //!     let msg = Message::new_text("Important message".to_string());
-//!     manager.send_reliable_message(msg).await?;
+//!     manager.send_reliable(msg).await?;
 //!     
 //!     // Handle acknowledgments
-//!     let ack_msg = Message::new_acknowledgment(123);
-//!     manager.handle_acknowledgment(&ack_msg).await;
+//!     let message_id = 123;
+//!     manager.handle_acknowledgment(message_id);
 //!     
 //!     Ok(())
 //! }
