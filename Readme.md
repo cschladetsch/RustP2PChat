@@ -381,15 +381,67 @@ cargo run
 - **Network Flexibility**: Works across LANs, WANs, and even through port forwarding
 - **Firewall Note**: Ensure the listening port is open in your firewall settings
 
+## Documentation
+
+For detailed feature documentation, see [FEATURES.md](FEATURES.md).
+
+## Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/cschladetsch/RustP2PChat.git
+cd RustP2PChat
+
+# Build release version
+cargo build --release
+
+# Run tests
+cargo test
+
+# Run the application
+./target/release/rust-p2p-chat --help
+```
+
+## Quick Start Examples
+
+### Basic Usage
+```bash
+# Terminal 1: Start first peer
+./rust-p2p-chat --port 8080
+
+# Terminal 2: Connect to first peer
+./rust-p2p-chat --connect 127.0.0.1:8080
+```
+
+### With Nicknames
+```bash
+# Terminal 1
+./rust-p2p-chat --port 8080 --nickname Alice
+
+# Terminal 2
+./rust-p2p-chat --connect 127.0.0.1:8080 --nickname Bob
+```
+
+### Send a File
+Once connected, use the `/send` command:
+```
+You: /send myfile.pdf
+✓ File sent
+```
+
 ## Future Enhancements
 
-While this implementation demonstrates core P2P concepts, potential extensions could include:
-- Multiple peer support (mesh networking)
-- Encryption with TLS or custom protocols
-- File transfer capabilities
-- Peer discovery mechanisms
-- Message persistence and history
-- GUI interface
+The codebase is prepared for these features:
+- ✅ Multiple peer support (mesh networking) - PeerManager ready
+- ✅ Encryption with TLS - Infrastructure implemented
+- ✅ File transfer capabilities - Fully implemented
+- ✅ Message persistence and history - Config support ready
+- 🔄 Peer discovery mechanisms - Can be added
+- 🔄 GUI interface - Core logic is CLI-independent
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
