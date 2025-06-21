@@ -325,6 +325,97 @@ You: I'm doing great!
    # Enter: SERVER_IP:8080 (e.g., 192.168.1.100:8080)
    ```
 
+## Connecting Over the Internet
+
+Since this is a direct TCP connection app, at least one peer needs a publicly accessible IP/port. Here are several ways to connect with friends over the internet:
+
+### Method 1: Ngrok (Easiest - 2 minutes setup)
+
+**Ngrok** creates a public tunnel to your local port. Perfect for quick chats!
+
+1. **Install ngrok:**
+   ```bash
+   # Linux/Mac (via apt)
+   curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+   
+   # Or download directly from https://ngrok.com/download
+   ```
+
+2. **You (host):**
+   ```bash
+   # Terminal 1: Start the chat
+   cargo run -- --port 8080
+   
+   # Terminal 2: Create public tunnel
+   ngrok tcp 8080
+   ```
+
+3. **Share with friend:**
+   Ngrok will show: `Forwarding tcp://0.tcp.ngrok.io:12345 -> localhost:8080`
+   
+   Your friend runs:
+   ```bash
+   cargo run -- --connect 0.tcp.ngrok.io:12345
+   ```
+
+That's it! No router configuration needed. Works through any firewall.
+
+### Method 2: Port Forwarding
+
+If you have router access:
+
+1. **Configure router:**
+   - Access router admin panel (usually 192.168.1.1)
+   - Forward port 8080 to your local IP
+   - Find your public IP: `curl ifconfig.me`
+
+2. **Start chat:**
+   ```bash
+   cargo run -- --port 8080
+   ```
+
+3. **Friend connects:**
+   ```bash
+   cargo run -- --connect YOUR_PUBLIC_IP:8080
+   ```
+
+### Method 3: VPN Solutions
+
+Use a mesh VPN for a private network between devices:
+
+- **[Tailscale](https://tailscale.com/)**: Easiest setup, free for personal use
+- **[ZeroTier](https://www.zerotier.com/)**: Open source alternative
+
+Both give you and your friend private IPs that work as if you're on the same network.
+
+### Method 4: Cloud VPS
+
+Rent a small VPS (AWS EC2, DigitalOcean, Linode):
+
+```bash
+# On VPS
+./rust-p2p-chat --port 8080
+
+# Both you and friend connect to VPS
+./rust-p2p-chat --connect VPS_IP:8080
+```
+
+### Method 5: Other Tunneling Services
+
+- **[localtunnel](https://localtunnel.github.io/www/)**: `lt --port 8080`
+- **[bore](https://github.com/ekzhang/bore)**: `bore local 8080 --to bore.pub`
+- **[serveo](https://serveo.net/)**: `ssh -R 80:localhost:8080 serveo.net`
+
+### Current Limitations
+
+This app uses direct TCP connections, so it requires at least one peer to have a publicly accessible IP/port. For true P2P through NATs without any configuration, you would need:
+- UDP hole punching
+- STUN/TURN servers
+- ICE negotiation
+- Or a full WebRTC implementation
+
+These features could be added in future versions for completely configuration-free connections.
+
 ### Alternative Testing Methods
 
 #### Using tmux or screen:
