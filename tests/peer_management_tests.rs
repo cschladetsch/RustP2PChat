@@ -61,7 +61,7 @@ async fn test_peer_creation() {
     // In practice, this would come from accepting a connection
     // For testing purposes, we'll skip the actual Peer creation with stream
     
-    let (tx, _rx) = mpsc::channel::<rust_p2p_chat::protocol::Message>(10);
+    let (_tx, _rx) = mpsc::channel::<rust_p2p_chat::protocol::Message>(10);
     
     // Note: In actual usage, Peer would be created with a real TcpStream
     // For this test, we just verify the PeerInfo can be created correctly
@@ -149,7 +149,7 @@ async fn test_concurrent_peer_access() {
     
     // Wait for all tasks to complete
     for handle in handles {
-        let (task_id, count, peer_list_len) = handle.await.unwrap();
+        let (_task_id, count, peer_list_len) = handle.await.unwrap();
         assert_eq!(count, 0);
         assert_eq!(peer_list_len, 0);
     }
@@ -277,7 +277,7 @@ fn test_peer_info_debug_format() {
 
 #[tokio::test]
 async fn test_peer_manager_receiver() {
-    let (manager, mut receiver) = PeerManager::new();
+    let (_manager, mut receiver) = PeerManager::new();
     
     // Test that receiver exists and can be used
     // Since PeerManager doesn't send messages in the current implementation,

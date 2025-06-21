@@ -5,9 +5,30 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] - 2025-06-21
 
 ### Added
-- **Comprehensive Documentation Overhaul**: Complete rewrite of all documentation files
-  - Enhanced README with table of contents, quick start guide, and detailed sections
-  - Comprehensive FEATURES.md with technical details, architecture, and troubleshooting
+- **macOS Installer System**: Complete macOS distribution support
+  - Universal binary supporting both Intel and Apple Silicon Macs
+  - Standard DMG installer with drag-to-Applications interface
+  - Cross-compilation setup with `build-macos.sh` script
+  - App bundle structure following macOS conventions
+  - Support for code signing and notarization (optional)
+  - Automatic system integration (Downloads folder, file associations)
+
+- **Comprehensive Test Suite**: 160+ individual tests across 10 categories
+  - File Transfer Tests (9): Hash verification, size limits, unicode handling
+  - Configuration Tests (10): Defaults, validation, serialization
+  - Protocol Tests (14): Message types, serialization, large data
+  - Command Tests (20): Parsing, handling, edge cases
+  - Error Handling Tests (34): All error types, user-friendly messages
+  - Reliability Tests (15): Acknowledgments, retries, timeouts
+  - Concurrent Tests (7): Stress testing, graceful shutdown
+  - Peer Management Tests (15): Concurrent access, IPv6 support
+  - Encryption Tests (39): E2E encryption, key exchange, signing
+  - Integration Tests (20): Real-world scenarios, file workflows
+
+- **Enhanced Documentation**: Complete documentation overhaul
+  - Enhanced README with macOS installer instructions
+  - Comprehensive FEATURES.md with installation & distribution section
+  - Updated API.md with macOS installer APIs
   - Complete command reference with examples
   - Platform-specific build instructions for Windows, Ubuntu/WSL, and macOS
   - Security best practices and considerations

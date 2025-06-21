@@ -11,11 +11,12 @@ This document provides comprehensive technical documentation for all features im
 3. [File Transfer](#file-transfer)
 4. [Command System](#command-system)
 5. [Configuration](#configuration)
-6. [Network Protocol](#network-protocol)
-7. [Architecture](#architecture)
-8. [Performance](#performance)
-9. [Troubleshooting](#troubleshooting)
-10. [Development Guide](#development-guide)
+6. [Installation & Distribution](#installation--distribution)
+7. [Network Protocol](#network-protocol)
+8. [Architecture](#architecture)
+9. [Performance](#performance)
+10. [Troubleshooting](#troubleshooting)
+11. [Development Guide](#development-guide)
 
 ## Core Features
 
@@ -162,6 +163,73 @@ The application uses a hybrid encryption approach combining asymmetric and symme
 - No certificate validation (consider adding for known peers)
 - Keys are stored in memory only (not persisted)
 - No protection against MITM attacks (consider adding key fingerprints)
+
+## Installation & Distribution
+
+### macOS Installer
+
+The application includes a complete macOS installer system:
+
+#### Features
+- **Universal Binary**: Supports both Intel and Apple Silicon Macs
+- **Standard DMG Package**: Drag-and-drop installation to Applications folder
+- **App Bundle Structure**: Follows macOS app conventions with proper Info.plist
+- **System Integration**: Integrates with macOS Downloads folder and file associations
+
+#### Build Process
+```bash
+# Build macOS installer
+./build-macos.sh
+
+# Creates:
+# - RustP2PChat.app (Universal app bundle)
+# - RustP2PChat-0.1.0.dmg (Installer disk image)
+```
+
+#### Cross-Compilation Setup
+```bash
+# Add macOS targets
+rustup target add x86_64-apple-darwin
+rustup target add aarch64-apple-darwin
+
+# Configure linkers in .cargo/config.toml
+[target.x86_64-apple-darwin]
+linker = "x86_64-apple-darwin14-clang"
+
+[target.aarch64-apple-darwin]
+linker = "aarch64-apple-darwin14-clang"
+```
+
+#### Installation Process
+1. **Download** the DMG file from releases
+2. **Mount** the disk image
+3. **Drag** RustP2PChat.app to Applications folder
+4. **Launch** from Applications or Launchpad
+
+#### Code Signing (Optional)
+```bash
+# Sign the app bundle
+codesign --force --deep --sign "Developer ID Application: Your Name" RustP2PChat.app
+
+# Sign the DMG
+codesign --force --sign "Developer ID Application: Your Name" RustP2PChat-0.1.0.dmg
+```
+
+### Source Distribution
+
+Alternative installation methods:
+
+#### From Source
+```bash
+git clone https://github.com/cschladetsch/RustP2PChat.git
+cd RustP2PChat
+cargo build --release
+```
+
+#### Binary Releases
+- Pre-compiled binaries for Windows, macOS, and Linux
+- Available on GitHub releases page
+- Automatic CI/CD builds for multiple platforms
 
 ## Network Protocol
 

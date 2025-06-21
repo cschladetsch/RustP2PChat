@@ -335,6 +335,43 @@ let file_info = transfer.prepare_file(Path::new("document.pdf")).await?;
 // Send file_info via protocol
 ```
 
+## Installation & Distribution
+
+### macOS Installer API
+
+The application includes macOS installer functionality accessible through the build system:
+
+```bash
+# Build macOS installer
+./build-macos.sh
+
+# Creates:
+# - RustP2PChat.app (Universal app bundle)
+# - RustP2PChat-0.1.0.dmg (Installer disk image)
+```
+
+### Cross-Platform Build Configuration
+
+```toml
+# .cargo/config.toml
+[target.x86_64-apple-darwin]
+linker = "x86_64-apple-darwin14-clang"
+
+[target.aarch64-apple-darwin]
+linker = "aarch64-apple-darwin14-clang"
+```
+
+### App Bundle Structure
+
+```
+RustP2PChat.app/
+├── Contents/
+│   ├── Info.plist          # App metadata
+│   ├── MacOS/
+│   │   └── RustP2PChat     # Universal binary
+│   └── Resources/          # App resources
+```
+
 ## CLI Integration
 
 The application provides a complete CLI interface in `src/main.rs` that demonstrates integration with all APIs.

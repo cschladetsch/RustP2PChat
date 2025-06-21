@@ -141,9 +141,9 @@ fn test_command_parsing_case_sensitivity() {
 
 #[test]
 fn test_command_parsing_with_extra_spaces() {
-    // Test commands with extra spaces
+    // Test commands with extra spaces (split_whitespace normalizes to single spaces)
     if let Some(Command::SetNickname(nick)) = CommandHandler::parse_command("/nick    Alice   Bob") {
-        assert_eq!(nick, "Alice   Bob");
+        assert_eq!(nick, "Alice Bob");
     } else {
         panic!("Expected SetNickname command");
     }

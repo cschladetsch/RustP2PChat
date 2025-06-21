@@ -9,6 +9,7 @@ This document provides an overview of all documentation available for the Rust P
 1. **[README.md](Readme.md)** - Main project documentation
    - Quick start guide
    - Installation instructions
+   - macOS DMG installer guide
    - Usage examples
    - Platform-specific build instructions
    - Configuration options
@@ -41,10 +42,17 @@ This document provides an overview of all documentation available for the Rust P
    - Available at: `target/doc/rust_p2p_chat/index.html`
    - Includes all public APIs with examples
 
+6. **[macos-installer.md](macos-installer.md)** - macOS installer documentation
+   - DMG creation process
+   - Universal binary compilation
+   - Cross-platform build setup
+   - App bundle structure
+
 ## Documentation Structure
 
 ### User Documentation
 - **README.md**: First stop for users, covers installation and basic usage
+- **macOS installer**: DMG-based installation for Mac users
 - **Build instructions**: Platform-specific setup for Windows, macOS, Linux
 - **Quick start**: 30-second setup guide
 - **Command reference**: Complete list of chat commands
@@ -139,10 +147,11 @@ This document provides an overview of all documentation available for the Rust P
 
 ## Documentation Metrics
 
-- **Total Files**: 5 documentation files
-- **Word Count**: ~15,000 words
+- **Total Files**: 6 documentation files
+- **Word Count**: ~16,000 words
 - **Code Examples**: 50+ working examples
 - **Platforms Covered**: Windows, macOS, Linux, WSL
+- **Installation Methods**: Source build, macOS DMG installer
 - **Languages**: English
 - **Last Updated**: June 2025
 

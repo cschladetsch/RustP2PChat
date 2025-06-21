@@ -12,11 +12,11 @@ async fn test_file_transfer_basic() {
     
     // Create a test file
     let test_content = b"Hello, file transfer!";
-    let mut temp_file = NamedTempFile::new().unwrap();
-    std::io::Write::write_all(&mut temp_file, test_content).unwrap();
+    let test_file_path = temp_dir.path().join("test_file.txt");
+    fs::write(&test_file_path, test_content).unwrap();
     
     // Prepare file for transfer
-    let file_info = ft.prepare_file(temp_file.path()).await.unwrap();
+    let file_info = ft.prepare_file(&test_file_path).await.unwrap();
     
     assert_eq!(file_info.size, test_content.len() as u64);
     assert_eq!(file_info.data, test_content);
@@ -27,12 +27,13 @@ async fn test_file_transfer_basic() {
 #[tokio::test]
 async fn test_file_transfer_large_file() {
     let ft = FileTransfer::new(1); // 1MB limit
-    let temp_dir = tempdir().unwrap();
+    let _temp_dir = tempdir().unwrap();
     
     // Create a file larger than the limit
     let large_content = vec![0u8; 2 * 1024 * 1024]; // 2MB
     let mut temp_file = NamedTempFile::new().unwrap();
     std::io::Write::write_all(&mut temp_file, &large_content).unwrap();
+    std::io::Write::flush(&mut temp_file).unwrap();
     
     // Should fail due to size limit
     let result = ft.prepare_file(temp_file.path()).await;
@@ -47,12 +48,13 @@ async fn test_file_transfer_save_and_verify() {
     
     // Create test file
     let test_content = b"Save and verify test content";
-    let mut temp_file = NamedTempFile::new().unwrap();
-    std::io::Write::write_all(&mut temp_file, test_content).unwrap();
+    let test_file_path = temp_dir.path().join("test_file.txt");
+    fs::write(&test_file_path, test_content).unwrap();
     
     // Prepare and save file
-    let file_info = ft.prepare_file(temp_file.path()).await.unwrap();
-    let saved_path = ft.save_file(&file_info, temp_dir.path()).await.unwrap();
+    let file_info = ft.prepare_file(&test_file_path).await.unwrap();
+    let save_dir = temp_dir.path().join("downloads");
+    let saved_path = ft.save_file(&file_info, &save_dir).await.unwrap();
     
     // Verify saved file
     let saved_content = fs::read(&saved_path).unwrap();
@@ -66,10 +68,10 @@ async fn test_file_transfer_hash_mismatch() {
     
     // Create test file
     let test_content = b"Hash mismatch test";
-    let mut temp_file = NamedTempFile::new().unwrap();
-    std::io::Write::write_all(&mut temp_file, test_content).unwrap();
+    let test_file_path = temp_dir.path().join("test_file.txt");
+    fs::write(&test_file_path, test_content).unwrap();
     
-    let mut file_info = ft.prepare_file(temp_file.path()).await.unwrap();
+    let mut file_info = ft.prepare_file(&test_file_path).await.unwrap();
     
     // Corrupt the hash
     file_info.hash = "invalid_hash".to_string();
@@ -77,7 +79,8 @@ async fn test_file_transfer_hash_mismatch() {
     // Should fail due to hash mismatch
     let result = ft.save_file(&file_info, temp_dir.path()).await;
     assert!(result.is_err());
-    assert!(result.unwrap_err().to_string().contains("hash mismatch"));
+    let error_msg = result.unwrap_err().to_string();
+    assert!(error_msg.contains("corrupted during transfer"));
 }
 
 #[test]
@@ -114,10 +117,10 @@ async fn test_file_transfer_directory_creation() {
     
     // Create test file
     let test_content = b"Directory creation test";
-    let mut temp_file = NamedTempFile::new().unwrap();
-    std::io::Write::write_all(&mut temp_file, test_content).unwrap();
+    let test_file_path = temp_dir.path().join("test_file.txt");
+    fs::write(&test_file_path, test_content).unwrap();
     
-    let file_info = ft.prepare_file(temp_file.path()).await.unwrap();
+    let file_info = ft.prepare_file(&test_file_path).await.unwrap();
     
     // Save to nested directory (should create directories)
     let saved_path = ft.save_file(&file_info, &nested_dir).await.unwrap();

@@ -11,7 +11,7 @@ See [Features](FEATURES.md) and [ChangeLog](CHANGELOG.md)
 - [Demo](#demo)
 - [Quick Start](#-quick-start)
 - [Features](#features)
-- [Installation](#installation)
+- [Installation Options](#installation-options)
 - [Usage](#usage)
 - [Commands](#commands)
 - [Configuration](#configuration)
@@ -395,25 +395,33 @@ The project includes several testing and demo scripts in the `shell/` directory:
 
 ### Test Coverage
 
-**Unit Tests (15 total):**
-- Core library tests (3): Command parsing, config defaults, E2E encryption
-- Peer module tests (5): Peer creation, TCP connections, bidirectional communication
-- No test failures in latest run
+The project now includes a **comprehensive test suite with 160+ individual tests** across 10 major categories:
 
-**Integration Tests (7 total):**
-- Basic connection establishment
-- Message exchange between peers
-- Large message handling (8KB buffers)
-- Connection refused scenarios
-- Configuration with nicknames
-- Direct TCP connections
-- All tests passing with latest changes
+**Comprehensive Test Suite (160+ tests total):**
 
-**Security Test Coverage:**
-- **End-to-end encryption**: RSA key exchange, AES-256-GCM encryption/decryption
-- **Message authentication**: GCM integrity verification
-- **Key generation**: 1024-bit RSA keypair generation
-- **Handshake protocol**: Secure key exchange verification
+1. **File Transfer Tests** (9 tests) - Hash verification, size limits, unicode filenames, directory handling
+2. **Configuration Tests** (10 tests) - Defaults, validation, serialization, path resolution
+3. **Protocol Tests** (14 tests) - Message serialization, all message types, large data handling
+4. **Command Tests** (20 tests) - Command parsing, handler functionality, edge cases
+5. **Error Handling Tests** (34 tests) - All error types, user-friendly messages, source chains
+6. **Reliability Tests** (15 tests) - Message acknowledgments, retries, timeout handling
+7. **Concurrent Tests** (7 tests) - Stress testing, graceful shutdown, race conditions
+8. **Peer Management Tests** (15 tests) - Concurrent access, edge cases, IPv6 support
+9. **Encryption Tests** (39 tests) - E2E encryption, key exchange, signing, edge cases
+10. **Integration Tests** (20 tests) - Real-world scenarios, file workflows, system integration
+
+**Key Test Features:**
+- **Edge Case Coverage**: Unicode handling, large files, concurrent operations
+- **Security Testing**: Comprehensive encryption, key exchange, signing verification
+- **Error Scenarios**: Network failures, invalid inputs, permission issues
+- **Performance Testing**: Stress tests with 100+ concurrent operations
+- **Real-world Workflows**: File transfers, configuration persistence, graceful shutdown
+
+**Legacy Tests:**
+- **Unit Tests** (3): Core library functionality
+- **Simple Integration Tests** (7): Basic connection and messaging
+
+All tests use modern Rust testing practices with proper async/await patterns, temporary file cleanup, and comprehensive assertions.
 
 ### Code Quality
 
@@ -721,6 +729,32 @@ cargo run
 ## Documentation
 
 For detailed feature documentation, see [FEATURES.md](FEATURES.md).
+
+## Installation Options
+
+### macOS Installer
+
+For macOS users, you can download and install the pre-built application:
+
+1. **Download the DMG installer** from the releases page
+2. **Open the DMG file** and drag RustP2PChat.app to Applications
+3. **Launch from Applications** or Launchpad
+
+The macOS installer includes:
+- Universal binary (Intel + Apple Silicon support)
+- Standard macOS app bundle
+- Automatic file associations
+- System Downloads folder integration
+
+**Building macOS Installer:**
+```bash
+# Cross-compile for macOS (requires macOS or cross-compilation setup)
+./build-macos.sh
+
+# Output: RustP2PChat-0.1.0.dmg
+```
+
+See [macos-installer.md](macos-installer.md) for detailed build instructions.
 
 ## Building from Source
 
