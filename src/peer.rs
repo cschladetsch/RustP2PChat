@@ -1,10 +1,10 @@
+use crate::error::Result;
+use crate::protocol::Message;
+use std::collections::HashMap;
+use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::{mpsc, Mutex};
-use std::collections::HashMap;
-use std::sync::Arc;
-use std::net::SocketAddr;
-use crate::protocol::Message;
-use crate::error::Result;
 
 #[derive(Clone)]
 pub struct PeerInfo {

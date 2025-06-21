@@ -1,10 +1,10 @@
+use crate::error::Result;
+use crate::protocol::Message;
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc;
 use tokio::time::interval;
-use tracing::{debug, warn, error, trace};
-use crate::protocol::Message;
-use crate::error::Result;
+use tracing::{debug, error, trace, warn};
 
 /// Configuration for message reliability
 #[derive(Clone, Debug)]
@@ -57,7 +57,9 @@ impl ReliabilityManager {
         debug!("Sending reliable message with ID: {}", message_id);
 
         // Send the message immediately
-        self.outbound_tx.send(message.clone()).await
+        self.outbound_tx
+            .send(message.clone())
+            .await
             .map_err(|_| crate::error::ChatError::PeerDisconnected)?;
 
         // Track it for acknowledgment
@@ -77,7 +79,10 @@ impl ReliabilityManager {
     pub fn handle_acknowledgment(&mut self, message_id: u64) {
         if let Some(pending) = self.pending_messages.remove(&message_id) {
             let elapsed = pending.sent_at.elapsed();
-            debug!("Received ACK for message {} after {:?}", message_id, elapsed);
+            debug!(
+                "Received ACK for message {} after {:?}",
+                message_id, elapsed
+            );
         } else {
             warn!("Received ACK for unknown message ID: {}", message_id);
         }
@@ -105,7 +110,10 @@ impl ReliabilityManager {
         // Handle timeouts
         for id in to_timeout {
             if let Some(pending) = self.pending_messages.remove(&id) {
-                warn!("Message {} timed out after {} retries", id, pending.retry_count);
+                warn!(
+                    "Message {} timed out after {} retries",
+                    id, pending.retry_count
+                );
             }
         }
 
@@ -114,9 +122,11 @@ impl ReliabilityManager {
             if let Some(pending) = self.pending_messages.get_mut(&id) {
                 pending.retry_count += 1;
                 pending.next_retry = now + self.config.retry_delay;
-                
-                debug!("Retrying message {} (attempt {}/{})", 
-                      id, pending.retry_count, self.config.retry_attempts);
+
+                debug!(
+                    "Retrying message {} (attempt {}/{})",
+                    id, pending.retry_count, self.config.retry_attempts
+                );
 
                 // Resend the message
                 if let Err(e) = self.outbound_tx.send(pending.message.clone()).await {
@@ -131,7 +141,7 @@ impl ReliabilityManager {
     pub fn cleanup_old_messages(&mut self) {
         let cutoff = Instant::now() - self.config.ack_timeout;
         let initial_count = self.pending_messages.len();
-        
+
         self.pending_messages.retain(|id, pending| {
             if pending.sent_at < cutoff {
                 warn!("Cleaning up very old pending message: {}", id);
@@ -151,7 +161,7 @@ impl ReliabilityManager {
     pub fn get_stats(&self) -> ReliabilityStats {
         let mut by_retry_count = HashMap::new();
         let _now = Instant::now();
-        
+
         for pending in self.pending_messages.values() {
             let count = by_retry_count.entry(pending.retry_count).or_insert(0);
             *count += 1;

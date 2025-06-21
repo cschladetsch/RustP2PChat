@@ -1,8 +1,8 @@
-use serde::{Serialize, Deserialize};
-use directories::ProjectDirs;
-use std::path::PathBuf;
-use std::fs;
 use crate::error::{ChatError, Result};
+use directories::ProjectDirs;
+use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -39,11 +39,25 @@ impl Default for Config {
             download_dir: None,
             auto_open_media: true,
             media_extensions: vec![
-                "jpg".to_string(), "jpeg".to_string(), "png".to_string(), "gif".to_string(), 
-                "bmp".to_string(), "webp".to_string(), "svg".to_string(),
-                "mp4".to_string(), "avi".to_string(), "mov".to_string(), "wmv".to_string(),
-                "mp3".to_string(), "wav".to_string(), "flac".to_string(), "aac".to_string(),
-                "pdf".to_string(), "doc".to_string(), "docx".to_string(), "txt".to_string(),
+                "jpg".to_string(),
+                "jpeg".to_string(),
+                "png".to_string(),
+                "gif".to_string(),
+                "bmp".to_string(),
+                "webp".to_string(),
+                "svg".to_string(),
+                "mp4".to_string(),
+                "avi".to_string(),
+                "mov".to_string(),
+                "wmv".to_string(),
+                "mp3".to_string(),
+                "wav".to_string(),
+                "flac".to_string(),
+                "aac".to_string(),
+                "pdf".to_string(),
+                "doc".to_string(),
+                "docx".to_string(),
+                "txt".to_string(),
             ],
         }
     }
@@ -53,10 +67,12 @@ impl Config {
     pub fn load() -> Result<Self> {
         if let Some(config_path) = Self::config_path() {
             if config_path.exists() {
-                let contents = fs::read_to_string(&config_path)
-                    .map_err(|e| ChatError::Configuration(format!("Failed to read config: {}", e)))?;
-                let config: Config = toml::from_str(&contents)
-                    .map_err(|e| ChatError::Configuration(format!("Failed to parse config: {}", e)))?;
+                let contents = fs::read_to_string(&config_path).map_err(|e| {
+                    ChatError::Configuration(format!("Failed to read config: {}", e))
+                })?;
+                let config: Config = toml::from_str(&contents).map_err(|e| {
+                    ChatError::Configuration(format!("Failed to parse config: {}", e))
+                })?;
                 return Ok(config);
             }
         }
@@ -66,11 +82,13 @@ impl Config {
     pub fn save(&self) -> Result<()> {
         if let Some(config_path) = Self::config_path() {
             if let Some(parent) = config_path.parent() {
-                fs::create_dir_all(parent)
-                    .map_err(|e| ChatError::Configuration(format!("Failed to create config dir: {}", e)))?;
+                fs::create_dir_all(parent).map_err(|e| {
+                    ChatError::Configuration(format!("Failed to create config dir: {}", e))
+                })?;
             }
-            let contents = toml::to_string_pretty(self)
-                .map_err(|e| ChatError::Configuration(format!("Failed to serialize config: {}", e)))?;
+            let contents = toml::to_string_pretty(self).map_err(|e| {
+                ChatError::Configuration(format!("Failed to serialize config: {}", e))
+            })?;
             fs::write(&config_path, contents)
                 .map_err(|e| ChatError::Configuration(format!("Failed to write config: {}", e)))?;
         }

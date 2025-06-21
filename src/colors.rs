@@ -1,4 +1,21 @@
-// ANSI color codes for terminal output
+//! ANSI color codes and terminal styling for the P2P chat application.
+//!
+//! This module provides constants for terminal color codes and text styling
+//! to enhance the user interface of the chat application.
+
+/// ANSI color codes and text styling constants for terminal output.
+///
+/// This struct provides a centralized location for all terminal styling
+/// constants used throughout the application to ensure consistent formatting.
+///
+/// # Examples
+///
+/// ```rust
+/// use rust_p2p_chat::colors::Colors;
+///
+/// println!("{}Error: Connection failed{}", Colors::RED, Colors::RESET);
+/// println!("{}✓ Success{}", Colors::GREEN, Colors::RESET);
+/// ```
 pub struct Colors;
 
 impl Colors {
@@ -12,7 +29,7 @@ impl Colors {
     pub const CYAN: &'static str = "\x1b[36m";
     pub const WHITE: &'static str = "\x1b[37m";
     pub const GRAY: &'static str = "\x1b[90m";
-    
+
     // Bright colors
     pub const BRIGHT_RED: &'static str = "\x1b[91m";
     pub const BRIGHT_GREEN: &'static str = "\x1b[92m";
@@ -20,7 +37,7 @@ impl Colors {
     pub const BRIGHT_BLUE: &'static str = "\x1b[94m";
     pub const BRIGHT_MAGENTA: &'static str = "\x1b[95m";
     pub const BRIGHT_CYAN: &'static str = "\x1b[96m";
-    
+
     // Text styles
     pub const BOLD: &'static str = "\x1b[1m";
     pub const DIM: &'static str = "\x1b[2m";

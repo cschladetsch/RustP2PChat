@@ -1,6 +1,6 @@
-use rust_p2p_chat::{P2PPeer, handle_connection};
+use rust_p2p_chat::{handle_connection, P2PPeer};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use tokio::time::{timeout, Duration};
 
 #[tokio::test]
@@ -21,19 +21,20 @@ async fn test_peer_creation_no_target() {
 async fn test_tcp_connection() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    
+
     let server_handle = tokio::spawn(async move {
         let (stream, _) = listener.accept().await.unwrap();
         stream
     });
-    
-    let client_handle = tokio::spawn(async move {
-        TcpStream::connect(addr).await.unwrap()
-    });
-    
-    let result = timeout(Duration::from_secs(5), 
-        futures::future::try_join(server_handle, client_handle)).await;
-    
+
+    let client_handle = tokio::spawn(async move { TcpStream::connect(addr).await.unwrap() });
+
+    let result = timeout(
+        Duration::from_secs(5),
+        futures::future::try_join(server_handle, client_handle),
+    )
+    .await;
+
     assert!(result.is_ok());
 }
 
@@ -41,7 +42,7 @@ async fn test_tcp_connection() {
 async fn test_handle_connection() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    
+
     // Server that uses handle_connection
     let server_handle = tokio::spawn(async move {
         let (stream, _) = listener.accept().await.unwrap();
@@ -49,7 +50,7 @@ async fn test_handle_connection() {
         // which won't work in tests, so we expect it to exit
         let _ = handle_connection(stream).await;
     });
-    
+
     // Client that connects and sends a message
     let client_handle = tokio::spawn(async move {
         let mut stream = TcpStream::connect(addr).await.unwrap();
@@ -57,44 +58,47 @@ async fn test_handle_connection() {
         // Give server time to process
         tokio::time::sleep(Duration::from_millis(100)).await;
     });
-    
+
     // Use shorter timeout since handle_connection won't complete normally in tests
-    let _ = timeout(Duration::from_secs(1), 
-        futures::future::join(server_handle, client_handle)).await;
+    let _ = timeout(
+        Duration::from_secs(1),
+        futures::future::join(server_handle, client_handle),
+    )
+    .await;
 }
 
 #[tokio::test]
 async fn test_bidirectional_communication() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    
+
     let server_task = tokio::spawn(async move {
         let (mut stream, _) = listener.accept().await.unwrap();
-        
+
         // Read message from client
         let mut buf = vec![0; 1024];
         let n = stream.read(&mut buf).await.unwrap();
         assert_eq!(&buf[..n], b"Hello from client\n");
-        
+
         // Send response
         stream.write_all(b"Hello from server\n").await.unwrap();
     });
-    
+
     let client_task = tokio::spawn(async move {
         let mut stream = TcpStream::connect(addr).await.unwrap();
-        
+
         // Send message
         stream.write_all(b"Hello from client\n").await.unwrap();
-        
+
         // Read response
         let mut buf = vec![0; 1024];
         let n = stream.read(&mut buf).await.unwrap();
         assert_eq!(&buf[..n], b"Hello from server\n");
     });
-    
-    let result = timeout(
-        Duration::from_secs(5), 
-        async { tokio::join!(server_task, client_task) }
-    ).await;
+
+    let result = timeout(Duration::from_secs(5), async {
+        tokio::join!(server_task, client_task)
+    })
+    .await;
     assert!(result.is_ok(), "Test timed out");
 }

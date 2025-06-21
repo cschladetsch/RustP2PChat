@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -97,7 +97,7 @@ impl Message {
     pub fn deserialize(data: &[u8]) -> Result<Self, bincode::Error> {
         bincode::deserialize(data)
     }
-    
+
     pub fn new_encryption(msg: EncryptionMessage) -> Self {
         Message {
             id: rand::random(),
@@ -105,7 +105,7 @@ impl Message {
             msg_type: MessageType::Encryption(msg),
         }
     }
-    
+
     pub fn new_encrypted_text(encrypted: String) -> Self {
         Message {
             id: rand::random(),

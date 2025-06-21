@@ -1,7 +1,7 @@
-use crate::protocol::Command;
-use crate::peer::PeerManager;
 use crate::config::Config;
 use crate::error::Result;
+use crate::peer::PeerManager;
+use crate::protocol::Command;
 
 pub struct CommandHandler {
     config: Config,
@@ -85,13 +85,14 @@ impl CommandHandler {
   /stats             - Show message reliability statistics
   /quit, /exit       - Exit the chat
 
-Type normally to send messages to all connected peers."#.to_string()
+Type normally to send messages to all connected peers."#
+            .to_string()
     }
 
     async fn get_info_text(&self, peer_manager: &PeerManager) -> String {
         let peer_count = peer_manager.peer_count().await;
         let nickname = self.config.nickname.as_deref().unwrap_or("Anonymous");
-        
+
         format!(
             "Chat Information:
   Nickname: {}
@@ -101,7 +102,11 @@ Type normally to send messages to all connected peers."#.to_string()
   Max file size: {} MB",
             nickname,
             peer_count,
-            if self.config.enable_encryption { "Enabled" } else { "Disabled" },
+            if self.config.enable_encryption {
+                "Enabled"
+            } else {
+                "Disabled"
+            },
             self.config.buffer_size,
             self.config.max_file_size_mb
         )
@@ -116,7 +121,10 @@ Type normally to send messages to all connected peers."#.to_string()
         let mut result = format!("Connected peers ({}):\n", peers.len());
         for peer in peers {
             let nickname = peer.nickname.as_deref().unwrap_or("Anonymous");
-            result.push_str(&format!("  - {} ({}) from {}\n", nickname, peer.id, peer.address));
+            result.push_str(&format!(
+                "  - {} ({}) from {}\n",
+                nickname, peer.id, peer.address
+            ));
         }
         result
     }

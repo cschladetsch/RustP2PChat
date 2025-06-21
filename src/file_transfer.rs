@@ -1,11 +1,11 @@
-use std::path::{Path, PathBuf};
+use crate::error::{ChatError, Result};
+use crate::protocol::{FileInfo, Message, MessageType, StatusUpdate};
+use sha2::{Digest, Sha256};
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
-use sha2::{Sha256, Digest};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use crate::protocol::{FileInfo, Message, MessageType, StatusUpdate};
-use crate::error::{ChatError, Result};
 
 #[allow(dead_code)]
 const CHUNK_SIZE: usize = 8192;
@@ -24,7 +24,7 @@ impl FileTransfer {
     pub async fn prepare_file(&self, path: &Path) -> Result<FileInfo> {
         let metadata = fs::metadata(path)
             .map_err(|e| ChatError::FileTransfer(format!("Failed to read file metadata: {}", e)))?;
-        
+
         if metadata.len() > self.max_file_size {
             return Err(ChatError::FileTransfer(format!(
                 "File too large: {} MB (max: {} MB)",
@@ -33,7 +33,8 @@ impl FileTransfer {
             )));
         }
 
-        let file_name = path.file_name()
+        let file_name = path
+            .file_name()
             .ok_or_else(|| ChatError::FileTransfer("Invalid file name".to_string()))?
             .to_string_lossy()
             .to_string();
@@ -67,8 +68,9 @@ impl FileTransfer {
             return Err(ChatError::FileTransfer("File hash mismatch".to_string()));
         }
 
-        fs::create_dir_all(download_dir)
-            .map_err(|e| ChatError::FileTransfer(format!("Failed to create download directory: {}", e)))?;
+        fs::create_dir_all(download_dir).map_err(|e| {
+            ChatError::FileTransfer(format!("Failed to create download directory: {}", e))
+        })?;
 
         let file_path = download_dir.join(&file_info.name);
         let mut file = File::create(&file_path).await?;
@@ -92,9 +94,7 @@ impl FileTransfer {
     /// Opens a file using the platform's default application
     pub fn open_file(path: &Path) -> Result<()> {
         let result = if cfg!(target_os = "macos") {
-            Command::new("open")
-                .arg(path)
-                .spawn()
+            Command::new("open").arg(path).spawn()
         } else if cfg!(target_os = "windows") {
             Command::new("cmd")
                 .args(["/C", "start", "", &path.to_string_lossy()])
@@ -104,23 +104,20 @@ impl FileTransfer {
             Command::new("xdg-open")
                 .arg(path)
                 .spawn()
-                .or_else(|_| {
-                    Command::new("gnome-open")
-                        .arg(path)
-                        .spawn()
-                })
-                .or_else(|_| {
-                    Command::new("kde-open")
-                        .arg(path)
-                        .spawn()
-                })
+                .or_else(|_| Command::new("gnome-open").arg(path).spawn())
+                .or_else(|_| Command::new("kde-open").arg(path).spawn())
         } else {
-            return Err(ChatError::FileTransfer("Unsupported platform for opening files".to_string()));
+            return Err(ChatError::FileTransfer(
+                "Unsupported platform for opening files".to_string(),
+            ));
         };
 
         match result {
             Ok(_) => Ok(()),
-            Err(e) => Err(ChatError::FileTransfer(format!("Failed to open file: {}", e))),
+            Err(e) => Err(ChatError::FileTransfer(format!(
+                "Failed to open file: {}",
+                e
+            ))),
         }
     }
 
@@ -128,7 +125,9 @@ impl FileTransfer {
     pub fn is_media_file(filename: &str, media_extensions: &[String]) -> bool {
         if let Some(extension) = Path::new(filename).extension() {
             let ext = extension.to_string_lossy().to_lowercase();
-            media_extensions.iter().any(|media_ext| media_ext.to_lowercase() == ext)
+            media_extensions
+                .iter()
+                .any(|media_ext| media_ext.to_lowercase() == ext)
         } else {
             false
         }
