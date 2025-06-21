@@ -549,20 +549,151 @@ For detailed feature documentation, see [FEATURES.md](FEATURES.md).
 
 ## Building from Source
 
-```bash
-# Clone the repository
-git clone https://github.com/cschladetsch/RustP2PChat.git
-cd RustP2PChat
+### Prerequisites
 
-# Build release version
+First, ensure you have Rust installed. If not, install it from [rustup.rs](https://rustup.rs/).
+
+### Platform-Specific Build Instructions
+
+#### Windows
+
+1. **Install Rust (if not already installed):**
+   ```powershell
+   # Download and run rustup-init.exe from https://rustup.rs/
+   # Or use winget:
+   winget install Rustlang.Rust
+   ```
+
+2. **Clone and build:**
+   ```powershell
+   # Clone the repository
+   git clone https://github.com/cschladetsch/RustP2PChat.git
+   cd RustP2PChat
+
+   # Build release version
+   cargo build --release
+
+   # Run tests
+   cargo test
+
+   # Run the application
+   .\target\release\rust-p2p-chat.exe --help
+   ```
+
+3. **Windows Firewall Note:**
+   - On first run, Windows Firewall may prompt you to allow the application
+   - Allow access for both private and public networks if you plan to connect over the internet
+
+#### Ubuntu/WSL
+
+1. **Install Rust and dependencies:**
+   ```bash
+   # Update package list
+   sudo apt update
+
+   # Install build essentials and Rust dependencies
+   sudo apt install -y build-essential pkg-config libssl-dev
+
+   # Install Rust (if not already installed)
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   source "$HOME/.cargo/env"
+   ```
+
+2. **Clone and build:**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/cschladetsch/RustP2PChat.git
+   cd RustP2PChat
+
+   # Build release version
+   cargo build --release
+
+   # Run tests
+   cargo test
+
+   # Run the application
+   ./target/release/rust-p2p-chat --help
+   ```
+
+3. **WSL-specific notes:**
+   - For connecting between WSL and Windows host, use the WSL IP address (run `hostname -I` in WSL)
+   - Port forwarding may be required for external connections
+
+#### macOS
+
+1. **Install Rust and dependencies:**
+   ```bash
+   # Install Xcode Command Line Tools (if not already installed)
+   xcode-select --install
+
+   # Install Rust (if not already installed)
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   source "$HOME/.cargo/env"
+   ```
+
+2. **Clone and build:**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/cschladetsch/RustP2PChat.git
+   cd RustP2PChat
+
+   # Build release version
+   cargo build --release
+
+   # Run tests
+   cargo test
+
+   # Run the application
+   ./target/release/rust-p2p-chat --help
+   ```
+
+3. **macOS Security Note:**
+   - On first run, macOS may block the application
+   - Go to System Preferences → Security & Privacy → General
+   - Click "Allow Anyway" for rust-p2p-chat
+   - Or run with: `sudo spctl --add ./target/release/rust-p2p-chat`
+
+### Build Options
+
+```bash
+# Debug build (slower but with debug symbols)
+cargo build
+
+# Release build (optimized)
 cargo build --release
 
-# Run tests
+# Run directly without building binary
+cargo run -- --port 8080
+
+# Build and run tests
 cargo test
 
-# Run the application
-./target/release/rust-p2p-chat --help
+# Build with specific features (if available)
+cargo build --release --features "feature_name"
 ```
+
+### Troubleshooting Build Issues
+
+1. **Rust version too old:**
+   ```bash
+   rustup update
+   ```
+
+2. **Missing OpenSSL (Ubuntu/WSL):**
+   ```bash
+   sudo apt install libssl-dev
+   ```
+
+3. **Permission denied (Unix-like systems):**
+   ```bash
+   chmod +x ./target/release/rust-p2p-chat
+   ```
+
+4. **Build cache issues:**
+   ```bash
+   cargo clean
+   cargo build --release
+   ```
 
 ## Quick Start Examples
 
