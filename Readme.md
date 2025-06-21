@@ -2,6 +2,8 @@
 
 A blazing-fast, truly decentralized peer-to-peer chat application built with Rust and Tokio. Experience real-time communication without any intermediary servers - just pure, direct connections between peers!
 
+See [Features](FEATURES.md) and [ChangeLog)[CHANGELOG.md]
+
 ## 🚀 Key Highlights
 
 - 🔒 **Military-Grade Encryption**: 1024-bit RSA + AES-256-GCM end-to-end encryption
