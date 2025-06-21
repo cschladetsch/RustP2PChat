@@ -4,11 +4,13 @@ use std::time::SystemTime;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MessageType {
     Text(String),
+    EncryptedText(String), // Base64 encoded encrypted text
     File(FileInfo),
     Command(Command),
     Status(StatusUpdate),
     Heartbeat,
     Acknowledgment(u64), // Message ID
+    Encryption(EncryptionMessage),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -42,6 +44,15 @@ pub enum StatusUpdate {
     PeerDisconnected(String),
     TransferProgress(String, u64, u64), // filename, current, total
     Error(String),
+    EncryptionEnabled,
+    EncryptionDisabled,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum EncryptionMessage {
+    PublicKeyExchange(String), // Base64 encoded public key
+    SharedKeyExchange(String), // Base64 encoded encrypted AES key
+    HandshakeComplete,
 }
 
 impl Message {
@@ -75,5 +86,21 @@ impl Message {
 
     pub fn deserialize(data: &[u8]) -> Result<Self, bincode::Error> {
         bincode::deserialize(data)
+    }
+    
+    pub fn new_encryption(msg: EncryptionMessage) -> Self {
+        Message {
+            id: rand::random(),
+            timestamp: SystemTime::now(),
+            msg_type: MessageType::Encryption(msg),
+        }
+    }
+    
+    pub fn new_encrypted_text(encrypted: String) -> Self {
+        Message {
+            id: rand::random(),
+            timestamp: SystemTime::now(),
+            msg_type: MessageType::EncryptedText(encrypted),
+        }
     }
 }

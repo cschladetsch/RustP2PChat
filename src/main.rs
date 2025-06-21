@@ -60,10 +60,7 @@ async fn main() -> io::Result<()> {
     }
 
     // Load or create configuration
-    let mut config = match Config::load() {
-        Ok(c) => c,
-        Err(_) => Config::default(),
-    };
+    let mut config = Config::load().unwrap_or_default();
 
     // Override config with CLI arguments
     if cli.debug {

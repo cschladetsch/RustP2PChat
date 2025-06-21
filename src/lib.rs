@@ -9,6 +9,7 @@ pub mod commands;
 
 use std::io;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, AsyncReadExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
@@ -18,10 +19,11 @@ use tokio::select;
 
 use crate::colors::Colors;
 use crate::error::{ChatError, Result};
-use crate::protocol::{Message, MessageType, Command, StatusUpdate};
+use crate::protocol::{Message, MessageType, Command, StatusUpdate, EncryptionMessage};
 use crate::config::Config;
 use crate::file_transfer::FileTransfer;
 use crate::commands::CommandHandler;
+use crate::encryption::E2EEncryption;
 
 
 // Simple P2P Chat implementation
@@ -89,10 +91,26 @@ pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Re
     let (reader, writer) = stream.into_split();
     let (tx, rx) = mpsc::channel(100);
     
-    // Spawn tasks
-    let read_handle = tokio::spawn(read_enhanced_messages(reader, config.buffer_size));
+    // Initialize encryption
+    let encryption = Arc::new(tokio::sync::Mutex::new(E2EEncryption::new()?));
+    let enc_clone1 = encryption.clone();
+    let enc_clone2 = encryption.clone();
+    let tx_clone = tx.clone();
+    
+    // Start encryption handshake
+    tokio::spawn(async move {
+        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
+        let enc = enc_clone1.lock().await;
+        if let Ok(pub_key) = enc.get_public_key_base64() {
+            let msg = Message::new_encryption(EncryptionMessage::PublicKeyExchange(pub_key));
+            let _ = tx_clone.send(msg).await;
+        }
+    });
+    
+    // Spawn tasks with encryption
+    let read_handle = tokio::spawn(read_enhanced_messages(reader, config.buffer_size, enc_clone2.clone(), tx.clone()));
     let write_handle = tokio::spawn(write_enhanced_messages(writer, rx));
-    let input_handle = tokio::spawn(handle_enhanced_input(tx, config));
+    let input_handle = tokio::spawn(handle_enhanced_input(tx, config, encryption));
     
     // Wait for any task to complete
     tokio::select! {
@@ -104,7 +122,12 @@ pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Re
     Ok(())
 }
 
-async fn read_enhanced_messages(mut reader: OwnedReadHalf, buffer_size: usize) -> Result<()> {
+async fn read_enhanced_messages(
+    mut reader: OwnedReadHalf, 
+    buffer_size: usize,
+    encryption: Arc<tokio::sync::Mutex<E2EEncryption>>,
+    tx: mpsc::Sender<Message>
+) -> Result<()> {
     let mut buffer = vec![0; buffer_size];
     
     loop {
@@ -116,7 +139,7 @@ async fn read_enhanced_messages(mut reader: OwnedReadHalf, buffer_size: usize) -
             Ok(n) => {
                 // Try new protocol first
                 match Message::deserialize(&buffer[..n]) {
-                    Ok(message) => handle_message(message).await?,
+                    Ok(message) => handle_message(message, encryption.clone(), tx.clone()).await?,
                     Err(_) => {
                         // Fallback to plain text
                         let text = String::from_utf8_lossy(&buffer[..n]).trim_end().to_string();
@@ -135,13 +158,33 @@ async fn read_enhanced_messages(mut reader: OwnedReadHalf, buffer_size: usize) -
     }
 }
 
-async fn handle_message(message: Message) -> Result<()> {
+async fn handle_message(
+    message: Message,
+    encryption: Arc<tokio::sync::Mutex<E2EEncryption>>,
+    tx: mpsc::Sender<Message>
+) -> Result<()> {
     match message.msg_type {
         MessageType::Text(text) => {
             print!("\r\x1b[2K");
-            println!("{}{}Peer:{} {}", Colors::BOLD, Colors::BRIGHT_CYAN, Colors::RESET, text);
+            println!("{}{}Peer:{} {} {}(unencrypted){}", 
+                Colors::BOLD, Colors::BRIGHT_CYAN, Colors::RESET, text, Colors::DIM, Colors::RESET);
             print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
             io::Write::flush(&mut io::stdout())?;
+        }
+        MessageType::EncryptedText(encrypted) => {
+            let enc = encryption.lock().await;
+            match enc.decrypt_message(&encrypted) {
+                Ok(text) => {
+                    print!("\r\x1b[2K");
+                    println!("{}{}Peer:{} {} {}🔒{}", 
+                        Colors::BOLD, Colors::BRIGHT_CYAN, Colors::RESET, text, Colors::GREEN, Colors::RESET);
+                    print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
+                    io::Write::flush(&mut io::stdout())?;
+                }
+                Err(_) => {
+                    println!("\n{}Failed to decrypt message{}", Colors::RED, Colors::RESET);
+                }
+            }
         }
         MessageType::File(file_info) => {
             println!("\n{}📁 Receiving file: {} ({} bytes){}", 
@@ -154,7 +197,64 @@ async fn handle_message(message: Message) -> Result<()> {
                     print!("\r{}Progress {}: {:.1}%{}", Colors::YELLOW, name, percent, Colors::RESET);
                     io::Write::flush(&mut io::stdout())?;
                 }
+                StatusUpdate::EncryptionEnabled => {
+                    println!("\n{}🔒 End-to-end encryption enabled!{}", Colors::GREEN, Colors::RESET);
+                }
                 _ => {}
+            }
+        }
+        MessageType::Encryption(enc_msg) => {
+            match enc_msg {
+                EncryptionMessage::PublicKeyExchange(key) => {
+                    println!("\n{}Received encryption key from peer...{}", Colors::YELLOW, Colors::RESET);
+                    // Set peer's public key
+                    let mut enc = encryption.lock().await;
+                    if let Err(e) = enc.set_peer_public_key(&key) {
+                        eprintln!("Failed to set peer public key: {}", e);
+                        return Ok(());
+                    }
+                    
+                    // If we haven't sent our key yet, send it
+                    if !enc.is_ready() {
+                        if let Ok(encrypted_key) = enc.generate_shared_key() {
+                            drop(enc); // Release lock before sending
+                            let msg = Message::new_encryption(EncryptionMessage::SharedKeyExchange(encrypted_key));
+                            tx.send(msg).await.map_err(|_| ChatError::PeerDisconnected)?;
+                            println!("{}Sending encrypted session key...{}", Colors::YELLOW, Colors::RESET);
+                        }
+                    }
+                }
+                EncryptionMessage::SharedKeyExchange(encrypted_key) => {
+                    println!("\n{}Received encrypted session key...{}", Colors::YELLOW, Colors::RESET);
+                    let mut enc = encryption.lock().await;
+                    if let Err(e) = enc.set_shared_key(&encrypted_key) {
+                        eprintln!("Failed to set shared key: {}", e);
+                        return Ok(());
+                    }
+                    drop(enc);
+                    
+                    // Send confirmation
+                    let msg = Message::new_encryption(EncryptionMessage::HandshakeComplete);
+                    tx.send(msg).await.map_err(|_| ChatError::PeerDisconnected)?;
+                    
+                    // Send status update
+                    let status_msg = Message {
+                        id: rand::random(),
+                        timestamp: std::time::SystemTime::now(),
+                        msg_type: MessageType::Status(StatusUpdate::EncryptionEnabled),
+                    };
+                    tx.send(status_msg).await.map_err(|_| ChatError::PeerDisconnected)?;
+                }
+                EncryptionMessage::HandshakeComplete => {
+                    println!("\n{}🔒 Encryption handshake complete!{}", Colors::GREEN, Colors::RESET);
+                    // Send status update
+                    let status_msg = Message {
+                        id: rand::random(),
+                        timestamp: std::time::SystemTime::now(),
+                        msg_type: MessageType::Status(StatusUpdate::EncryptionEnabled),
+                    };
+                    tx.send(status_msg).await.map_err(|_| ChatError::PeerDisconnected)?;
+                }
             }
         }
         _ => {}
@@ -183,7 +283,11 @@ async fn write_enhanced_messages(mut writer: OwnedWriteHalf, mut rx: mpsc::Recei
     Ok(())
 }
 
-async fn handle_enhanced_input(tx: mpsc::Sender<Message>, config: Config) -> Result<()> {
+async fn handle_enhanced_input(
+    tx: mpsc::Sender<Message>,
+    config: Config,
+    encryption: Arc<tokio::sync::Mutex<E2EEncryption>>
+) -> Result<()> {
     let reader = BufReader::new(tokio::io::stdin());
     let mut lines = reader.lines();
     let _command_handler = CommandHandler::new(config.clone());
@@ -226,8 +330,18 @@ async fn handle_enhanced_input(tx: mpsc::Sender<Message>, config: Config) -> Res
                 }
             }
         } else {
-            // Regular message
-            let msg = Message::new_text(line);
+            // Try to encrypt message if encryption is ready
+            let enc = encryption.lock().await;
+            let msg = if enc.is_ready() {
+                match enc.encrypt_message(&line) {
+                    Ok(encrypted) => Message::new_encrypted_text(encrypted),
+                    Err(_) => Message::new_text(line),
+                }
+            } else {
+                Message::new_text(line)
+            };
+            drop(enc);
+            
             tx.send(msg).await.map_err(|_| ChatError::PeerDisconnected)?;
         }
         
