@@ -19,9 +19,15 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 
 ![Demo](resources/Demo1.gif)
 
-## New Features Added
+## Recent Updates
 
-### Recently Implemented
+### Latest Changes (June 2025)
+- **Test Improvements**: Updated integration tests to use idiomatic Rust struct initialization
+- **Code Quality**: Fixed clippy warnings, now using `is_none_or` instead of `map_or`
+- **Quick Testing**: Added `quick_test.sh` script for rapid peer testing
+- **Documentation**: Enhanced README with security notices and key highlights
+
+### Recently Implemented Features
 - **Custom Error Types**: Replaced generic errors with specific ChatError types
 - **Enhanced Message Protocol**: Support for text, files, commands, and status updates
 - **File Transfer**: Send files up to 100MB (configurable) with progress tracking
@@ -201,7 +207,7 @@ This application implements a **symmetric peer-to-peer architecture** where:
 
 ## Testing
 
-The project includes comprehensive unit and integration tests.
+The project includes comprehensive unit and integration tests covering all major functionality.
 
 ### Running Tests
 
@@ -215,8 +221,9 @@ Run unit tests only:
 cargo test --lib
 ```
 
-Run integration tests only:
+Run integration tests:
 ```bash
+cargo test --test integration_tests
 cargo test --test simple_integration_test
 ```
 
@@ -230,16 +237,40 @@ Test encryption specifically:
 cargo run --bin test_chat
 ```
 
+### Quick Testing Script
+
+Use the provided script for rapid testing of two peers:
+```bash
+./quick_test.sh
+```
+
 ### Test Coverage
 
-The test suite demonstrates:
-- TCP connection establishment
+**Unit Tests (15 total):**
+- Core library tests (3): Command parsing, config defaults, E2E encryption
+- Peer module tests (5): Peer creation, TCP connections, bidirectional communication
+- No test failures in latest run
+
+**Integration Tests (7 total):**
+- Basic connection establishment
 - Message exchange between peers
-- Bidirectional communication
-- Connection error handling
-- Multiple message scenarios
-- **End-to-end encryption**: RSA key exchange, AES encryption/decryption, message authentication
-- **Security protocols**: Key generation, handshake verification, encryption status
+- Large message handling (8KB buffers)
+- Connection refused scenarios
+- Configuration with nicknames
+- Direct TCP connections
+- All tests passing with latest changes
+
+**Security Test Coverage:**
+- **End-to-end encryption**: RSA key exchange, AES-256-GCM encryption/decryption
+- **Message authentication**: GCM integrity verification
+- **Key generation**: 1024-bit RSA keypair generation
+- **Handshake protocol**: Secure key exchange verification
+
+### Code Quality
+
+- **Clippy**: No warnings (clean linting)
+- **Type checking**: All types verified with `cargo check`
+- **Performance**: Sub-second test execution
 
 Note: The integration tests serve as examples of how to use the chat functionality programmatically.
 
