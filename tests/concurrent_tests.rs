@@ -100,9 +100,9 @@ async fn test_simultaneous_peer_connections() {
     let _ = timeout(Duration::from_secs(3), handle2).await;
     
     // Check that at least the test completed without panicking
-    let final_results = results.lock().await;
+    let _final_results = results.lock().await;
     // We don't assert on success since connection might fail, but no panic should occur
-    assert!(final_results.len() >= 0); // Just ensure we got here
+    // Just ensure we got here without panic
 }
 
 #[tokio::test]
@@ -114,7 +114,7 @@ async fn test_multiple_message_exchange() {
         let (mut stream, _) = listener.accept().await.unwrap();
         
         // Receive and echo back multiple messages concurrently
-        let mut tasks = Vec::new();
+        let _tasks: Vec<tokio::task::JoinHandle<()>> = Vec::new();
         for _ in 0..5 {
             let mut buffer = vec![0; 1024];
             let n = stream.read(&mut buffer).await.unwrap();
@@ -215,7 +215,7 @@ async fn test_concurrent_message_processing() {
         let (mut stream, _) = listener.accept().await.unwrap();
         
         // Process multiple concurrent messages
-        for i in 0..10 {
+        for _i in 0..10 {
             let mut buffer = vec![0; 1024];
             if let Ok(n) = stream.read(&mut buffer).await {
                 if n > 0 {

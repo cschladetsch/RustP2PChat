@@ -113,7 +113,7 @@ fn test_config_history_path_custom() {
 
 #[tokio::test]
 async fn test_config_save_and_load() {
-    let temp_dir = tempdir().unwrap();
+    let _temp_dir = tempdir().unwrap();
     
     // Create a custom config
     let original_config = Config {

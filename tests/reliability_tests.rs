@@ -1,4 +1,4 @@
-use rust_p2p_chat::protocol::{Message, MessageType};
+use rust_p2p_chat::protocol::Message;
 use rust_p2p_chat::reliability::{ReliabilityConfig, ReliabilityManager};
 use std::time::Duration;
 use tokio::sync::mpsc;

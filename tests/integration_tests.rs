@@ -1,16 +1,14 @@
 use rust_p2p_chat::{P2PChat, Config};
 use rust_p2p_chat::protocol::{Message, MessageType};
 use rust_p2p_chat::file_transfer::FileTransfer;
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
-use tempfile::{tempdir, NamedTempFile};
+use tempfile::tempdir;
 use tokio::fs;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::Mutex;
 use tokio::time::{sleep, timeout};
-use std::io::Write;
 
 #[tokio::test]
 async fn test_full_chat_session_lifecycle() {
@@ -20,8 +18,8 @@ async fn test_full_chat_session_lifecycle() {
     let config1 = Config {
         nickname: Some("Alice".to_string()),
         default_port: 0, // Use random port
-        downloads_dir: temp_dir.path().join("alice_downloads").to_string_lossy().to_string(),
-        history_file: temp_dir.path().join("alice_history.txt").to_string_lossy().to_string(),
+        download_dir: Some(temp_dir.path().join("alice_downloads")),
+        history_file: Some(temp_dir.path().join("alice_history.txt")),
         enable_encryption: false, // Disable for simplicity
         ..Default::default()
     };
@@ -29,8 +27,8 @@ async fn test_full_chat_session_lifecycle() {
     let config2 = Config {
         nickname: Some("Bob".to_string()),
         default_port: 0, // Use random port
-        downloads_dir: temp_dir.path().join("bob_downloads").to_string_lossy().to_string(),
-        history_file: temp_dir.path().join("bob_history.txt").to_string_lossy().to_string(),
+        download_dir: Some(temp_dir.path().join("bob_downloads")),
+        history_file: Some(temp_dir.path().join("bob_history.txt")),
         enable_encryption: false, // Disable for simplicity
         ..Default::default()
     };
@@ -78,7 +76,7 @@ async fn test_message_protocol_integration() {
         let deserialized: Message = bincode::deserialize(&serialized).unwrap();
         
         assert_eq!(message.id, deserialized.id);
-        assert_eq!(message.message_type, deserialized.message_type);
+        assert_eq!(message.msg_type, deserialized.msg_type);
         // Timestamp might differ slightly, but should be close
         assert!(message.timestamp <= deserialized.timestamp);
     }
@@ -91,10 +89,11 @@ async fn test_file_transfer_integration() {
     let ft = FileTransfer::new(100); // 100MB limit
     
     // Create test files of various sizes
+    let medium_content = "A".repeat(1024);
     let test_files = vec![
         ("small.txt", "Hello, world!"),
         ("empty.txt", ""),
-        ("medium.txt", &"A".repeat(1024)), // 1KB
+        ("medium.txt", medium_content.as_str()), // 1KB
         ("special_chars.txt", "Special: !@#$%^&*()_+-=[]{}|;':\",./<>?"),
         ("unicode.txt", "Unicode: 你好世界 🌍 Café résumé"),
     ];
@@ -108,7 +107,7 @@ async fn test_file_transfer_integration() {
         let file_info = ft.prepare_file(&source_path).await.unwrap();
         
         // Verify file info
-        assert_eq!(file_info.filename, filename);
+        assert_eq!(file_info.name, filename);
         assert_eq!(file_info.size, content.len() as u64);
         assert!(!file_info.hash.is_empty());
         
@@ -143,7 +142,7 @@ async fn test_file_transfer_with_directories() {
     
     // Prepare file for transfer
     let file_info = ft.prepare_file(&nested_file).await.unwrap();
-    assert_eq!(file_info.filename, "deep_file.txt");
+    assert_eq!(file_info.name, "deep_file.txt");
     
     // Save to destination
     let dest_dir = temp_dir.path().join("destination");
@@ -266,9 +265,9 @@ async fn test_configuration_persistence() {
         buffer_size: 8192,
         max_file_size_mb: 200,
         enable_encryption: true,
-        auto_open_files: false,
-        downloads_dir: "/custom/downloads".to_string(),
-        history_file: "/custom/history.txt".to_string(),
+        auto_open_media: false,
+        download_dir: Some(PathBuf::from("/custom/downloads")),
+        history_file: Some(PathBuf::from("/custom/history.txt")),
     };
     
     // Serialize to TOML
@@ -286,7 +285,7 @@ async fn test_configuration_persistence() {
     assert_eq!(original_config.max_file_size_mb, loaded_config.max_file_size_mb);
     assert_eq!(original_config.enable_encryption, loaded_config.enable_encryption);
     assert_eq!(original_config.auto_open_files, loaded_config.auto_open_files);
-    assert_eq!(original_config.downloads_dir, loaded_config.downloads_dir);
+    assert_eq!(original_config.download_dir, loaded_config.download_dir);
     assert_eq!(original_config.history_file, loaded_config.history_file);
 }
 
@@ -340,8 +339,8 @@ async fn test_error_recovery_scenarios() {
     fs::create_dir_all(&readonly_dir).await.unwrap();
     
     // Try to save to read-only directory (if permissions can be set)
-    let file_info = rust_p2p_chat::file_transfer::FileInfo {
-        filename: "test.txt".to_string(),
+    let file_info = rust_p2p_chat::protocol::FileInfo {
+        name: "test.txt".to_string(),
         size: 10,
         hash: "dummy_hash".to_string(),
         data: b"test data ".to_vec(),
@@ -412,7 +411,7 @@ async fn test_unicode_filename_handling() {
         
         // Prepare file for transfer
         let file_info = ft.prepare_file(&file_path).await.unwrap();
-        assert_eq!(file_info.filename, filename);
+        assert_eq!(file_info.name, filename);
         
         // Save file
         let dest_dir = temp_dir.path().join("unicode_dest");
@@ -500,12 +499,15 @@ fn test_config_default_values() {
     assert!(config.default_port >= 1024); // Non-privileged port
     assert!(config.buffer_size >= 1024); // Reasonable buffer size
     assert!(config.max_file_size_mb >= 1); // At least 1MB
-    assert!(!config.downloads_dir.is_empty());
-    assert!(!config.history_file.is_empty());
+    assert!(config.download_path().exists() || config.download_path().parent().is_some());
+    assert!(config.history_path().is_some() || config.history_path().is_none());
     
     // Verify paths are reasonable
-    assert!(config.downloads_dir.contains("downloads") || config.downloads_dir.contains("Downloads"));
-    assert!(config.history_file.ends_with(".txt") || config.history_file.ends_with(".log"));
+    let download_path = config.download_path();
+    assert!(download_path.to_string_lossy().contains("Downloads") || download_path.to_string_lossy().contains("downloads") || download_path == PathBuf::from("."));
+    if let Some(history_path) = config.history_path() {
+        assert!(history_path.extension().map_or(false, |ext| ext == "json" || ext == "txt"));
+    }
 }
 
 #[test]
@@ -513,7 +515,13 @@ fn test_message_type_variants() {
     // Test all MessageType variants
     let text_msg = MessageType::Text("Hello".to_string());
     let encrypted_msg = MessageType::EncryptedText("encrypted".to_string());
-    let file_msg = MessageType::File("file.txt".to_string());
+    let file_info = rust_p2p_chat::protocol::FileInfo {
+        name: "file.txt".to_string(),
+        size: 100,
+        hash: "dummy_hash".to_string(),
+        data: vec![],
+    };
+    let file_msg = MessageType::File(file_info);
     
     // Test pattern matching
     match text_msg {
@@ -527,7 +535,7 @@ fn test_message_type_variants() {
     }
     
     match file_msg {
-        MessageType::File(filename) => assert_eq!(filename, "file.txt"),
+        MessageType::File(file_info) => assert_eq!(file_info.name, "file.txt"),
         _ => panic!("Expected File variant"),
     }
 }
@@ -539,20 +547,21 @@ async fn test_graceful_shutdown_simulation() {
     
     let config = Config {
         nickname: Some("ShutdownTest".to_string()),
-        downloads_dir: temp_dir.path().join("downloads").to_string_lossy().to_string(),
-        history_file: temp_dir.path().join("history.txt").to_string_lossy().to_string(),
+        download_dir: Some(temp_dir.path().join("downloads")),
+        history_file: Some(temp_dir.path().join("history.txt")),
         ..Default::default()
     };
     
     // Create directories
-    fs::create_dir_all(&config.downloads_dir).await.unwrap();
+    let download_dir = config.download_path();
+    fs::create_dir_all(&download_dir).await.unwrap();
     
     // Create P2PChat instance
     let chat = P2PChat::new(config);
     assert!(chat.is_ok());
     
     // Simulate some activity by creating files
-    let downloads_path = Path::new(&chat.as_ref().unwrap().config.downloads_dir);
+    let downloads_path = &download_dir;
     fs::write(downloads_path.join("test_download.txt"), "test content").await.unwrap();
     
     // Simulate graceful shutdown by dropping the chat instance

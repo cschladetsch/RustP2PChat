@@ -1,4 +1,5 @@
 use rust_p2p_chat::error::{ChatError, Result};
+use std::error::Error;
 use std::io;
 
 #[test]

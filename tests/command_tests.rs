@@ -295,11 +295,11 @@ fn test_command_handler_new() {
         ..Default::default()
     };
     
-    let handler = CommandHandler::new(config.clone());
+    let _handler = CommandHandler::new(config.clone());
     // We can't directly access the internal config, but we can test that it was created
     // This test mainly ensures the constructor doesn't panic
     
     // Test that we can create a handler with default config
-    let default_handler = CommandHandler::new(Config::default());
+    let _default_handler = CommandHandler::new(Config::default());
     // Similarly, just ensuring no panic
 }
