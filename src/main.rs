@@ -28,6 +28,10 @@ struct Cli {
     #[arg(short, long)]
     nickname: Option<String>,
 
+    /// Launch GUI interface
+    #[arg(short, long)]
+    gui: bool,
+
     #[command(subcommand)]
     command: Option<Commands>,
 }
@@ -58,6 +62,15 @@ async fn main() -> io::Result<()> {
         .init();
 
     info!("Starting Rust P2P Chat v{}", env!("CARGO_PKG_VERSION"));
+
+    // Handle GUI mode
+    if cli.gui {
+        info!("Launching GUI interface");
+        return rust_p2p_chat::gui::run_gui().map_err(|e| {
+            error!("GUI error: {}", e);
+            io::Error::new(io::ErrorKind::Other, format!("GUI error: {}", e))
+        });
+    }
 
     // Handle special commands
     if let Some(command) = cli.command {

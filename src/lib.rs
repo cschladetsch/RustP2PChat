@@ -41,6 +41,7 @@ pub mod config;
 pub mod encryption;
 pub mod error;
 pub mod file_transfer;
+pub mod gui;
 pub mod peer;
 pub mod protocol;
 pub mod reliability;

@@ -26,6 +26,10 @@ rsa = { version = "0.9", features = ["sha2"] }
 aes-gcm = "0.10"
 x25519-dalek = "2.0"
 base64 = "0.21"
+eframe = "0.28"
+egui = "0.28"
+egui_extras = "0.28"
+poll-promise = "0.3"
 
 [dev-dependencies]
 tempfile = "3.8"
