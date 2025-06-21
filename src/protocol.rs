@@ -37,6 +37,7 @@ pub enum Command {
     SendFile(String),
     SetNickname(String),
     ToggleAutoOpen,
+    Stats,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,6 +63,14 @@ impl Message {
             id: rand::random(),
             timestamp: SystemTime::now(),
             msg_type: MessageType::Text(text),
+        }
+    }
+
+    pub fn new_acknowledgment(message_id: u64) -> Self {
+        Message {
+            id: rand::random(),
+            timestamp: SystemTime::now(),
+            msg_type: MessageType::Acknowledgment(message_id),
         }
     }
 

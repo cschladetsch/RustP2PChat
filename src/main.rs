@@ -1,6 +1,8 @@
 use std::io;
 use clap::{Parser, Subcommand};
 use rust_p2p_chat::{P2PChat, config::Config};
+use tracing::{info, warn, error, debug};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 #[derive(Parser)]
 #[command(name = "rust-p2p-chat")]
@@ -40,17 +42,35 @@ enum Commands {
 async fn main() -> io::Result<()> {
     let cli = Cli::parse();
 
+    // Initialize tracing/logging
+    let log_level = if cli.debug { "debug" } else { "info" };
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new(format!("rust_p2p_chat={}", log_level)));
+    
+    tracing_subscriber::registry()
+        .with(fmt::layer()
+            .with_target(false)
+            .with_timer(fmt::time::UtcTime::rfc_3339())
+            .with_level(true))
+        .with(filter)
+        .init();
+
+    info!("Starting Rust P2P Chat v{}", env!("CARGO_PKG_VERSION"));
+
     // Handle special commands
     if let Some(command) = cli.command {
         match command {
             Commands::Config => {
+                info!("Generating default configuration");
                 let config = Config::default();
                 match config.save() {
                     Ok(_) => {
+                        info!("Configuration saved successfully");
                         println!("Configuration saved successfully!");
                         println!("Edit the config file to customize settings.");
                     }
                     Err(e) => {
+                        error!("Failed to save configuration: {}", e);
                         eprintln!("Failed to save configuration: {}", e);
                     }
                 }
@@ -60,17 +80,29 @@ async fn main() -> io::Result<()> {
     }
 
     // Load or create configuration
-    let mut config = Config::load().unwrap_or_default();
+    let mut config = match Config::load() {
+        Ok(cfg) => {
+            debug!("Loaded configuration from file");
+            cfg
+        }
+        Err(e) => {
+            warn!("Could not load config file ({}), using defaults", e);
+            Config::default()
+        }
+    };
 
     // Override config with CLI arguments
     if cli.debug {
+        debug!("Debug logging enabled via CLI");
         config.log_level = "debug".to_string();
     }
     if cli.no_encryption {
+        warn!("Encryption disabled via CLI - messages will be unencrypted!");
         config.enable_encryption = false;
     }
-    if let Some(nick) = cli.nickname {
-        config.nickname = Some(nick);
+    if let Some(nick) = &cli.nickname {
+        info!("Setting nickname to: {}", nick);
+        config.nickname = cli.nickname;
     }
 
     // Display banner in interactive mode
@@ -87,13 +119,26 @@ async fn main() -> io::Result<()> {
     }
 
     // Create and start the chat
+    info!("Initializing P2P chat with port {} and encryption {}", 
+          cli.port, if config.enable_encryption { "enabled" } else { "disabled" });
+    
     let mut chat = P2PChat::new(config).map_err(|e| {
+        error!("Failed to create chat: {}", e);
         io::Error::new(io::ErrorKind::Other, format!("Failed to create chat: {}", e))
     })?;
 
+    if let Some(ref peer_addr) = cli.connect {
+        info!("Attempting to connect to peer at: {}", peer_addr);
+    } else {
+        info!("Starting in listen mode on port: {}", cli.port);
+    }
+
     chat.start(cli.port, cli.connect).await.map_err(|e| {
+        error!("Chat session ended with error: {}", e);
         io::Error::new(io::ErrorKind::Other, format!("Chat error: {}", e))
     })?;
+
+    info!("Chat session ended normally");
 
     Ok(())
 }

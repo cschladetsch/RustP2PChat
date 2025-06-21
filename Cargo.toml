@@ -14,7 +14,7 @@ rand = "0.8"
 sha2 = "0.10"
 clap = { version = "4.4", features = ["derive"] }
 tracing = "0.1"
-tracing-subscriber = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "time"] }
 directories = "5.0"
 toml = "0.8"
 chrono = "0.4"

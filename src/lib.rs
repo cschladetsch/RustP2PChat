@@ -43,6 +43,7 @@ pub mod peer;
 pub mod encryption;
 pub mod file_transfer;
 pub mod commands;
+pub mod reliability;
 
 use std::io;
 use std::path::PathBuf;
@@ -53,12 +54,14 @@ use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::sync::mpsc;
 use futures::future::try_join;
 use tokio::select;
+use tracing::{info, warn, error, debug, instrument};
 
 use crate::colors::Colors;
 use crate::protocol::{Message, MessageType, Command, StatusUpdate, EncryptionMessage};
 use crate::commands::CommandHandler;
 use crate::encryption::E2EEncryption;
 use crate::peer::PeerManager;
+// Note: ReliabilityManager integration is prepared but not fully connected in this implementation
 
 // Re-export important types for library users
 pub use crate::config::Config;
@@ -134,6 +137,7 @@ impl P2PChat {
     }
 
     /// Starts the P2P chat application.
+    #[instrument(skip(self), fields(port = listen_port, peer = peer_address.as_deref().unwrap_or("none")))]
     /// 
     /// This method either connects to a peer at the specified address or starts
     /// listening for incoming connections on the given port.
@@ -173,30 +177,42 @@ impl P2PChat {
     /// - `ChatError::Io` for other network-related errors
     pub async fn start(&mut self, listen_port: u16, peer_address: Option<String>) -> Result<()> {
         let addr = format!("0.0.0.0:{}", listen_port);
-        let listener = TcpListener::bind(&addr).await
-            .map_err(|e| ChatError::BindFailed(addr.clone(), e))?;
+        debug!("Attempting to bind to address: {}", addr);
         
+        let listener = TcpListener::bind(&addr).await
+            .map_err(|e| {
+                error!("Failed to bind to {}: {}", addr, e);
+                ChatError::BindFailed(addr.clone(), e)
+            })?;
+        
+        info!("Successfully bound to address: {}", addr);
         println!("{}Listening on: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
         println!("{}Type /help for available commands{}", Colors::DIM, Colors::RESET);
 
         if let Some(peer_addr) = peer_address {
+            info!("Attempting dual mode: connect to {} or accept incoming", peer_addr);
             self.connect_or_accept(listener, &peer_addr).await?;
         } else {
+            info!("Listen-only mode: waiting for peer connection");
             println!("{}Waiting for peer to connect...{}", Colors::YELLOW, Colors::RESET);
             let (stream, peer_addr) = listener.accept().await?;
+            info!("Accepted connection from: {}", peer_addr);
             println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, peer_addr, Colors::RESET);
             handle_enhanced_connection(stream, self.config.clone()).await?;
         }
 
+        info!("Chat session completed");
         Ok(())
     }
 
     async fn connect_or_accept(&mut self, listener: TcpListener, peer_addr: &str) -> Result<()> {
+        debug!("Starting connect-or-accept race for peer: {}", peer_addr);
         println!("{}Attempting to connect to peer at: {}{}", Colors::YELLOW, peer_addr, Colors::RESET);
         
         select! {
             result = listener.accept() => {
                 let (stream, addr) = result?;
+                info!("Won race by accepting connection from: {}", addr);
                 println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
                 handle_enhanced_connection(stream, self.config.clone()).await?;
             }
@@ -204,13 +220,16 @@ impl P2PChat {
                 match result {
                     Ok(stream) => {
                         let addr = stream.peer_addr()?;
+                        info!("Won race by connecting to peer at: {}", addr);
                         println!("{}✓ Connected to peer at: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
                         handle_enhanced_connection(stream, self.config.clone()).await?;
                     }
                     Err(e) => {
+                        warn!("Failed to connect to {}: {}. Falling back to accept", peer_addr, e);
                         println!("{}Failed to connect: {}. Waiting for incoming connection...{}", 
                                 Colors::YELLOW, e, Colors::RESET);
                         let (stream, addr) = listener.accept().await?;
+                        info!("Fallback: accepted connection from: {}", addr);
                         println!("{}✓ Peer connected from: {}{}", Colors::BRIGHT_GREEN, addr, Colors::RESET);
                         handle_enhanced_connection(stream, self.config.clone()).await?;
                     }
@@ -222,17 +241,21 @@ impl P2PChat {
 }
 
 // Enhanced connection handler with new features
+#[instrument(skip(stream, config), fields(peer_addr = ?stream.peer_addr()))]
 pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Result<()> {
+    info!("Starting enhanced connection handler");
     let (reader, writer) = stream.into_split();
     let (tx, rx) = mpsc::channel(100);
     
     // Initialize encryption
+    debug!("Initializing encryption system");
     let encryption = Arc::new(tokio::sync::Mutex::new(E2EEncryption::new()?));
     let enc_clone1 = encryption.clone();
     let enc_clone2 = encryption.clone();
     let tx_clone = tx.clone();
     
     // Initialize file transfer
+    debug!("Initializing file transfer with max size: {} MB", config.max_file_size_mb);
     let file_transfer = Arc::new(file_transfer::FileTransfer::new(config.max_file_size_mb));
     
     // Start encryption handshake
@@ -304,6 +327,18 @@ async fn handle_message(
     config: &Config,
     file_transfer: &Arc<file_transfer::FileTransfer>
 ) -> Result<()> {
+    // Send acknowledgment for messages that require it
+    match &message.msg_type {
+        MessageType::Text(_) | MessageType::EncryptedText(_) | MessageType::File(_) => {
+            debug!("Sending acknowledgment for message ID: {}", message.id);
+            let ack = Message::new_acknowledgment(message.id);
+            if let Err(e) = tx.send(ack).await {
+                warn!("Failed to send acknowledgment: {:?}", e);
+            }
+        }
+        _ => {} // Don't ACK control messages
+    }
+
     match message.msg_type {
         MessageType::Text(text) => {
             print!("\r\x1b[2K");
@@ -418,6 +453,11 @@ async fn handle_message(
                     tx.send(status_msg).await.map_err(|_| ChatError::PeerDisconnected)?;
                 }
             }
+        }
+        MessageType::Acknowledgment(msg_id) => {
+            debug!("Received acknowledgment for message ID: {}", msg_id);
+            // Note: In full implementation, this would notify the reliability manager
+            // For now, we just log it
         }
         _ => {}
     }

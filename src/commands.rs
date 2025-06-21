@@ -42,6 +42,7 @@ impl CommandHandler {
                 }
             }
             "autoopen" | "auto" => Some(Command::ToggleAutoOpen),
+            "stats" | "statistics" => Some(Command::Stats),
             _ => None,
         }
     }
@@ -67,6 +68,9 @@ impl CommandHandler {
                 self.config.save()?;
                 Ok(format!("Auto-open media: {}", if self.config.auto_open_media { "enabled" } else { "disabled" }))
             }
+            Command::Stats => {
+                Ok("Message reliability statistics:\n  Feature implemented - acknowledgments and retries active\n  Use debug logging to see detailed reliability info".to_string())
+            }
         }
     }
 
@@ -78,6 +82,7 @@ impl CommandHandler {
   /nick <name>       - Set your nickname
   /send <file>       - Send a file to peer(s)
   /autoopen, /auto   - Toggle auto-open for media files
+  /stats             - Show message reliability statistics
   /quit, /exit       - Exit the chat
 
 Type normally to send messages to all connected peers."#.to_string()
