@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
   - Support for code signing and notarization (optional)
   - Automatic system integration (Downloads folder, file associations)
 
-- **Comprehensive Test Suite**: 160+ individual tests across 10 categories
+- **Comprehensive Test Suite**: 183+ individual tests across 10 categories
   - File Transfer Tests (9): Hash verification, size limits, unicode handling
   - Configuration Tests (10): Defaults, validation, serialization
   - Protocol Tests (14): Message types, serialization, large data

@@ -1,6 +1,6 @@
 # Test Suite Documentation
 
-This directory contains a comprehensive test suite with **160+ individual tests** covering all aspects of the Rust P2P Chat application. The tests are organized into 10 major categories, ensuring robust validation of functionality, edge cases, and real-world scenarios.
+This directory contains a comprehensive test suite with **183+ individual tests** covering all aspects of the Rust P2P Chat application. The tests are organized into 10 major categories, ensuring robust validation of functionality, edge cases, and real-world scenarios.
 
 ## 📊 Test Overview
 

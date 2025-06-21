@@ -439,3 +439,170 @@ cargo doc --open
 # - Error handling patterns
 # - Cross-platform compatibility notes
 ```
+
+## Testing Framework
+
+The project includes comprehensive testing APIs and utilities:
+
+### Test Categories (183+ tests)
+- **File Transfer Tests** (9): Hash verification, size limits, unicode handling
+- **Configuration Tests** (10): Validation, serialization, path resolution
+- **Protocol Tests** (14): Message types, large data, binary compatibility
+- **Command Tests** (20): Parsing, aliases, error scenarios
+- **Error Handling Tests** (34): All error types with user-friendly messages
+- **Reliability Tests** (15): Acknowledgments, retries, network simulation
+- **Concurrent Tests** (7): Stress testing with 20+ connections
+- **Peer Management Tests** (15): IPv6 support, concurrent access
+- **Encryption Tests** (39): E2E encryption, key exchange, security
+- **Integration Tests** (20): Real-world workflows and system integration
+
+### Test Utilities API
+
+```rust
+// Create test configuration
+fn test_config() -> Config;
+
+// Create test peer instances
+async fn create_test_peer(port: u16) -> Result<P2PChat>;
+
+// Test message sending
+async fn send_test_message(peer: &mut P2PChat, message: &str) -> Result<()>;
+
+// File transfer testing
+async fn test_file_transfer(source: &Path, dest: &Path) -> Result<()>;
+
+// Encryption testing
+fn test_encryption_roundtrip(plaintext: &str) -> Result<String>;
+```
+
+### Running Tests
+
+```bash
+# Run all tests with output
+cargo test -- --nocapture
+
+# Run specific test categories
+cargo test file_transfer
+cargo test encryption
+cargo test integration
+
+# Run tests with debug logging
+RUST_LOG=debug cargo test -- --nocapture
+
+# Performance and stress tests
+cargo test concurrent -- --nocapture
+```
+
+## Performance Considerations
+
+### Optimization Features
+- **8KB Buffer**: Configurable buffer size for efficient message handling
+- **Async I/O**: Non-blocking operations with Tokio runtime
+- **Zero-copy**: Minimal memory allocations where possible
+- **Stream Splitting**: Separate read/write for concurrent I/O
+- **Lazy Loading**: Configuration and resources loaded on-demand
+
+### Memory Management
+- **Configurable Limits**: File transfer sizes and buffer limits
+- **Resource Cleanup**: Automatic cleanup on disconnection
+- **Minimal Allocations**: Efficient message serialization
+
+### Profiling Support
+
+```bash
+# Build with profiling symbols
+cargo build --release --features=profiling
+
+# Memory profiling (Linux)
+valgrind --tool=massif ./target/release/rust-p2p-chat
+
+# Performance profiling (Linux)  
+perf record --call-graph=dwarf ./target/release/rust-p2p-chat
+perf report
+```
+
+## Security API Reference
+
+### Encryption Implementation
+
+```rust
+// RSA + AES-256-GCM hybrid encryption
+impl E2EEncryption {
+    // Generate fresh RSA keypair
+    pub fn generate_keypair(&mut self) -> Result<()>;
+    
+    // Exchange keys with peer
+    pub fn set_peer_public_key(&mut self, key: &str) -> Result<()>;
+    
+    // Encrypt message with AES-256-GCM
+    pub fn encrypt_message(&self, plaintext: &str) -> Result<String>;
+    
+    // Decrypt and verify message
+    pub fn decrypt_message(&self, encrypted: &str) -> Result<String>;
+    
+    // Check if encryption is ready
+    pub fn is_ready(&self) -> bool;
+}
+```
+
+### File Transfer Security
+
+```rust
+// SHA-256 integrity verification
+pub async fn prepare_file(&self, path: &Path) -> Result<FileInfo>;
+pub async fn save_file(&self, file_info: &FileInfo, dir: &Path) -> Result<PathBuf>;
+
+// Size limit enforcement
+pub fn new(max_file_size_mb: u64) -> Self;
+
+// Cross-platform file opening (security conscious)
+pub fn open_file(path: &Path) -> Result<()>;
+```
+
+## Deployment and Distribution
+
+### Cross-Platform Build
+
+```bash
+# Windows cross-compilation
+cargo build --target x86_64-pc-windows-gnu
+
+# macOS universal binary  
+./build-macos.sh
+
+# Linux static binary
+cargo build --target x86_64-unknown-linux-musl
+```
+
+### Docker Support
+
+```dockerfile
+FROM rust:alpine as builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release
+
+FROM alpine:latest
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /app/target/release/rust-p2p-chat /usr/local/bin/
+EXPOSE 8080
+CMD ["rust-p2p-chat", "--port", "8080"]
+```
+
+### Package Management
+
+```bash
+# Cargo package
+cargo package
+cargo publish
+
+# Homebrew formula (macOS)
+brew install rust-p2p-chat
+
+# Snap package (Linux)
+snap install rust-p2p-chat
+```
+
+---
+
+*This API documentation is automatically updated with each release. For the latest inline documentation, run `cargo doc --open`.*
