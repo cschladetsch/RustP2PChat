@@ -1,3 +1,40 @@
+//! # Rust P2P Chat
+//! 
+//! A blazing-fast, truly decentralized peer-to-peer chat application built with Rust and Tokio.
+//! 
+//! ## Features
+//! 
+//! - **True P2P Architecture**: Direct TCP connections, no central servers
+//! - **End-to-End Encryption**: RSA + AES-256-GCM encryption
+//! - **File Transfer**: Send files up to 100MB with auto-open support
+//! - **Cross-Platform**: Windows, macOS, Linux support
+//! - **Zero Configuration**: Works instantly with just IP:port
+//! 
+//! ## Quick Start
+//! 
+//! ```rust,no_run
+//! use rust_p2p_chat::{P2PChat, Config};
+//! 
+//! #[tokio::main]
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//!     let config = Config::default();
+//!     let mut chat = P2PChat::new(config)?;
+//!     chat.start(8080, None).await?;
+//!     Ok(())
+//! }
+//! ```
+//! 
+//! ## Architecture
+//! 
+//! The application is built around several core modules:
+//! 
+//! - [`P2PChat`]: Main application orchestrator
+//! - [`config::Config`]: Configuration management
+//! - [`file_transfer::FileTransfer`]: File operations
+//! - [`encryption::E2EEncryption`]: End-to-end encryption
+//! - [`protocol`]: Message types and serialization
+//! - [`commands`]: Command system
+
 pub mod colors;
 pub mod error;
 pub mod protocol;  
@@ -18,24 +55,122 @@ use futures::future::try_join;
 use tokio::select;
 
 use crate::colors::Colors;
-use crate::error::{ChatError, Result};
 use crate::protocol::{Message, MessageType, Command, StatusUpdate, EncryptionMessage};
-use crate::config::Config;
 use crate::commands::CommandHandler;
 use crate::encryption::E2EEncryption;
 use crate::peer::PeerManager;
 
+// Re-export important types for library users
+pub use crate::config::Config;
+pub use crate::error::{ChatError, Result};
 
-// Simple P2P Chat implementation
+
+/// A decentralized peer-to-peer chat application.
+/// 
+/// `P2PChat` provides a complete implementation of a peer-to-peer chat system
+/// with end-to-end encryption, file transfers, and a command system.
+/// 
+/// # Features
+/// 
+/// - Direct TCP connections between peers
+/// - End-to-end encryption with RSA + AES-256-GCM
+/// - File transfer with automatic integrity verification
+/// - Auto-open for received media files
+/// - Configurable settings via TOML files
+/// - Cross-platform support (Windows, macOS, Linux)
+/// 
+/// # Examples
+/// 
+/// ```rust,no_run
+/// use rust_p2p_chat::{P2PChat, Config};
+/// 
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let config = Config::default();
+///     let mut chat = P2PChat::new(config)?;
+///     
+///     // Start listening on port 8080
+///     chat.start(8080, None).await?;
+///     Ok(())
+/// }
+/// ```
+/// 
+/// # Protocol
+/// 
+/// The application uses a binary protocol with support for:
+/// - Text messages (encrypted and unencrypted)
+/// - File transfers with metadata
+/// - Commands and status updates
+/// - Heartbeat for connection monitoring
+/// 
+/// # Security
+/// 
+/// - RSA-1024 key exchange (configurable)
+/// - AES-256-GCM message encryption
+/// - SHA256 file integrity verification
+/// - Perfect forward secrecy with session keys
 pub struct P2PChat {
+    /// Application configuration
     config: Config,
 }
 
 impl P2PChat {
+    /// Creates a new P2P chat instance with the given configuration.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `config` - Configuration settings for the chat application
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust
+    /// use rust_p2p_chat::{P2PChat, Config};
+    /// 
+    /// let config = Config::default();
+    /// let chat = P2PChat::new(config).unwrap();
+    /// ```
     pub fn new(config: Config) -> Result<Self> {
         Ok(Self { config })
     }
 
+    /// Starts the P2P chat application.
+    /// 
+    /// This method either connects to a peer at the specified address or starts
+    /// listening for incoming connections on the given port.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `listen_port` - Port number to listen on (if not connecting to a peer)
+    /// * `peer_address` - Optional peer address to connect to (format: "ip:port")
+    /// 
+    /// # Returns
+    /// 
+    /// Returns `Ok(())` when the chat session ends, or an error if connection fails.
+    /// 
+    /// # Examples
+    /// 
+    /// ```rust,no_run
+    /// use rust_p2p_chat::{P2PChat, Config};
+    /// 
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let mut chat = P2PChat::new(Config::default())?;
+    ///     
+    ///     // Listen on port 8080
+    ///     chat.start(8080, None).await?;
+    ///     
+    ///     // Or connect to a peer
+    ///     // chat.start(0, Some("192.168.1.100:8080".to_string())).await?;
+    ///     
+    ///     Ok(())
+    /// }
+    /// ```
+    /// 
+    /// # Errors
+    /// 
+    /// - `ChatError::BindFailed` if the port is already in use
+    /// - `ChatError::ConnectFailed` if connection to peer fails
+    /// - `ChatError::Io` for other network-related errors
     pub async fn start(&mut self, listen_port: u16, peer_address: Option<String>) -> Result<()> {
         let addr = format!("0.0.0.0:{}", listen_port);
         let listener = TcpListener::bind(&addr).await

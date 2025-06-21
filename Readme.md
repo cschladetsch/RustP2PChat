@@ -4,14 +4,34 @@ A blazing-fast, truly decentralized peer-to-peer chat application built with Rus
 
 See [Features](FEATURES.md) and [ChangeLog](CHANGELOG.md)
 
+## 📚 Table of Contents
+
+- [Key Highlights](#-key-highlights)
+- [What Makes This Special](#what-makes-this-special)
+- [Demo](#demo)
+- [Quick Start](#-quick-start)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Commands](#commands)
+- [Configuration](#configuration)
+- [Building from Source](#building-from-source)
+- [Testing](#testing)
+- [Connecting Over Internet](#connecting-over-the-internet)
+- [Security](#-security)
+- [Contributing](#-contributing)
+- [License](#-license)
+
 ## 🚀 Key Highlights
 
 - 🔒 **Military-Grade Encryption**: 1024-bit RSA + AES-256-GCM end-to-end encryption
 - ⚡ **Zero Configuration**: Works instantly with just IP:port - no setup required
 - 🌐 **True P2P**: Direct peer connections, no central servers or intermediaries
-- 📁 **File Transfer**: Send files up to 100MB with progress tracking
+- 📁 **File Transfer**: Send files up to 100MB with progress tracking and auto-open
 - 🎨 **Rich Terminal UI**: Colorful interface with encryption status indicators
 - 🔧 **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
+- 🎬 **Media Auto-Open**: Automatically open received images, videos, and documents
+- 💾 **Smart Downloads**: Files saved to system Downloads folder with verification
 
 ## What Makes This Special?
 
@@ -20,6 +40,33 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 ## Demo
 
 ![Demo](resources/Demo1.gif)
+
+## 🏃 Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/cschladetsch/RustP2PChat.git
+cd RustP2PChat
+
+# Build and run
+cargo run --release
+```
+
+### Start Chatting in 30 Seconds
+
+**Terminal 1 (First peer):**
+```bash
+cargo run --release -- --port 8080
+```
+
+**Terminal 2 (Second peer):**
+```bash
+cargo run --release -- --connect localhost:8080
+```
+
+That's it! You're now chatting peer-to-peer with end-to-end encryption! 🎉
 
 ## Recent Updates
 
@@ -156,6 +203,42 @@ The chat automatically establishes end-to-end encryption on connection. You'll s
 
 To exit, press Ctrl+C.
 
+## Commands
+
+During a chat session, you can use the following commands:
+
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `/help` | `/?` | Display available commands |
+| `/quit` | `/exit` | Exit the chat application |
+| `/send <file>` | `/file` | Send a file to the peer |
+| `/info` | | Show connection and configuration information |
+| `/nick <name>` | `/nickname` | Set or change your nickname |
+| `/autoopen` | `/auto` | Toggle auto-open for received media files |
+| `/peers` | `/list` | List connected peers (for future multi-peer support) |
+
+### Command Examples
+
+```bash
+# Send a file
+You: /send ~/Pictures/vacation.jpg
+✓ File sent
+
+# Change nickname
+You: /nick Alice
+✓ Nickname set to: Alice
+
+# Toggle auto-open
+You: /autoopen
+✓ Auto-open media: disabled
+
+# Get help
+You: /help
+Available commands:
+  /help, /?          - Show this help message
+  ...
+```
+
 ## Technical Details
 
 ### Architecture Overview
@@ -207,6 +290,50 @@ This application implements a **symmetric peer-to-peer architecture** where:
 - **High Throughput**: Can handle thousands of messages per second
 - **Low Latency**: Sub-millisecond message delivery on local networks
 - **Scalable Architecture**: Could be extended to support multiple peers
+
+## Configuration
+
+The application supports configuration through a TOML file. Generate a default config:
+
+```bash
+cargo run -- config
+```
+
+This creates a config file at:
+- Linux/macOS: `~/.config/rustchat/p2p-chat/config.toml`
+- Windows: `%APPDATA%\rustchat\p2p-chat\config.toml`
+
+### Configuration Options
+
+```toml
+# User settings
+nickname = "Alice"                   # Your display name
+default_port = 8080                  # Default listening port
+
+# Network settings
+buffer_size = 8192                   # Message buffer size in bytes
+heartbeat_interval_secs = 30         # Keep-alive interval
+reconnect_attempts = 3               # Number of reconnection attempts
+reconnect_delay_secs = 5             # Delay between reconnection attempts
+
+# Security settings
+enable_encryption = true             # Enable end-to-end encryption
+
+# File transfer settings
+max_file_size_mb = 100              # Maximum file size for transfers
+download_dir = "/path/to/downloads"  # Custom download directory (optional)
+auto_open_media = true              # Auto-open received media files
+media_extensions = [                 # File types to auto-open
+    "jpg", "jpeg", "png", "gif",
+    "mp4", "avi", "mov",
+    "pdf", "doc", "docx"
+]
+
+# Logging settings
+log_level = "info"                   # Options: trace, debug, info, warn, error
+save_history = true                  # Save chat history
+history_file = "/path/to/history"    # Custom history file location (optional)
+```
 
 ## Testing
 
@@ -778,9 +905,31 @@ The codebase is prepared for these features:
 - 🔄 Perfect Forward Secrecy - Can enhance current encryption
 - 🔄 Certificate pinning - For enhanced security
 
-## 🛡️ Security Notice
+## 🛡️ Security
 
-This implementation uses 1024-bit RSA keys for demonstration and educational purposes. For production use in high-security environments, consider upgrading to 2048-bit or 4096-bit RSA keys, or implementing elliptic curve cryptography (ECC) for better performance and security.
+### Encryption Features
+
+- **End-to-End Encryption**: All messages are encrypted between peers
+- **RSA-1024 Key Exchange**: Public key cryptography for secure key exchange
+- **AES-256-GCM**: Military-grade symmetric encryption for message content
+- **Perfect Forward Secrecy**: New encryption keys for every session
+- **Message Authentication**: GCM mode provides built-in integrity verification
+- **Visual Indicators**: 🔒 icon shows encryption status for each message
+
+### Security Best Practices
+
+1. **Verify Peer Identity**: Always confirm you're connecting to the intended peer
+2. **Use Strong Nicknames**: Makes it easier to identify who you're chatting with
+3. **Private Networks**: For sensitive communications, use VPN or private networks
+4. **Regular Updates**: Keep the application updated for latest security patches
+
+### Security Notice
+
+This implementation uses 1024-bit RSA keys for demonstration and educational purposes. For production use in high-security environments, consider:
+- Upgrading to 2048-bit or 4096-bit RSA keys
+- Implementing elliptic curve cryptography (ECC)
+- Adding certificate pinning for known peers
+- Implementing post-quantum cryptography for future-proofing
 
 ## 🤝 Contributing
 

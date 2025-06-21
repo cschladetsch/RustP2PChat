@@ -5,31 +5,56 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] - 2025-06-21
 
 ### Added
+- **Comprehensive Documentation Overhaul**: Complete rewrite of all documentation files
+  - Enhanced README with table of contents, quick start guide, and detailed sections
+  - Comprehensive FEATURES.md with technical details, architecture, and troubleshooting
+  - Complete command reference with examples
+  - Platform-specific build instructions for Windows, Ubuntu/WSL, and macOS
+  - Security best practices and considerations
+  - Performance optimization guidelines
+
 - **Auto-open Media Files**: Automatically open received media files after download
   - Platform-specific implementation (macOS: `open`, Windows: `start`, Linux: `xdg-open`)
   - Configurable via `/autoopen` command during chat
   - Support for images (jpg, png, gif, etc.), videos (mp4, avi, etc.), audio, and documents
   - Files are saved to system Downloads folder by default
   - New config options: `auto_open_media`, `download_dir`, `media_extensions`
+
 - **End-to-End Encryption**: Full implementation of 1024-bit RSA + AES-256-GCM encryption
   - Automatic key exchange on connection
   - Visual encryption indicators (🔒 icon)
   - Transparent encryption for all messages
   - Session-based key generation for perfect forward secrecy
+
+- **Enhanced Command System**: Extended command functionality
+  - `/autoopen` or `/auto` - Toggle auto-open for media files
+  - Improved `/info` command with comprehensive system information
+  - Better error handling and user feedback
+
+- **Configuration Enhancements**: Extended configuration options
+  - `download_dir` - Custom download directory
+  - `auto_open_media` - Toggle auto-open behavior
+  - `media_extensions` - Configurable file types for auto-open
+  - Better default values and validation
+
 - **Test Improvements**: Enhanced test coverage and quality
   - Updated to use idiomatic Rust struct initialization
   - Fixed clippy warnings (using `is_none_or` instead of `map_or`)
   - Added `quick_test.sh` script for rapid testing
-- **Documentation Updates**: Comprehensive documentation improvements
-  - Added security notices about RSA key sizes
-  - Enhanced README with key highlights section
-  - Updated test coverage information
-  - Added encryption test examples
+  - Comprehensive integration test coverage
 
 ### Changed
 - Improved code quality with clippy recommendations
 - Updated integration tests for better maintainability
 - File transfer now saves to system Downloads folder instead of local `downloads/` directory
+- Enhanced error messages and user feedback
+- Better command handling and state management
+
+### Security
+- Added security best practices documentation
+- Enhanced encryption documentation with implementation details
+- Security considerations for production deployment
+- Recommendations for key size upgrades
 
 ## [0.2.0] - 2024-12-22
 

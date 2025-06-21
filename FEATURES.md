@@ -2,7 +2,20 @@
 
 ## Overview
 
-This document provides detailed information about all the features implemented in the Rust P2P Chat application.
+This document provides comprehensive technical documentation for all features implemented in the Rust P2P Chat application. For quick start guides and basic usage, see the [README](Readme.md).
+
+## Table of Contents
+
+1. [Core Features](#core-features)
+2. [Security & Encryption](#security--encryption)
+3. [File Transfer](#file-transfer)
+4. [Command System](#command-system)
+5. [Configuration](#configuration)
+6. [Network Protocol](#network-protocol)
+7. [Architecture](#architecture)
+8. [Performance](#performance)
+9. [Troubleshooting](#troubleshooting)
+10. [Development Guide](#development-guide)
 
 ## Core Features
 
@@ -13,15 +26,13 @@ This document provides detailed information about all the features implemented i
 - **Equal Capabilities**: After connection, both peers have the same features
 - **Simultaneous Connect/Listen**: Can attempt outbound connection while accepting inbound
 
-### Enhanced Message Protocol
+### Network Communication
 
-The application supports multiple message types through a binary protocol:
-
-- **Text Messages**: Regular chat messages (backward compatible)
-- **File Transfers**: Send files up to 100MB (configurable)
-- **Commands**: Built-in command system
-- **Status Updates**: Progress tracking and connection status
-- **Heartbeat**: Keep-alive mechanism
+- **Direct TCP Connections**: Low-latency, reliable communication
+- **Binary Protocol**: Efficient message serialization with bincode
+- **Backward Compatibility**: Falls back to plain text for legacy support
+- **Stream Splitting**: Separate read/write halves for concurrent I/O
+- **Automatic Reconnection**: Configurable retry attempts and delays
 
 ### Command System
 
@@ -123,6 +134,84 @@ Configurable logging levels:
 - `warn`: Warning messages
 - `error`: Error messages only
 
+## Security & Encryption
+
+### Encryption Implementation
+
+The application uses a hybrid encryption approach combining asymmetric and symmetric cryptography:
+
+1. **Key Exchange Phase**:
+   - Each peer generates a 1024-bit RSA keypair on startup
+   - Public keys are exchanged automatically on connection
+   - Keys are encoded in base64 for transmission
+
+2. **Message Encryption**:
+   - AES-256-GCM is used for message content
+   - Each session generates a unique AES key
+   - GCM mode provides authenticated encryption
+
+3. **Security Features**:
+   - Perfect Forward Secrecy: New keys for each session
+   - Message Authentication: GCM prevents tampering
+   - Visual Indicators: 🔒 shows encryption status
+   - Automatic Fallback: Works with non-encrypted peers
+
+### Security Considerations
+
+- RSA-1024 is used for demonstration (upgrade to 2048+ for production)
+- No certificate validation (consider adding for known peers)
+- Keys are stored in memory only (not persisted)
+- No protection against MITM attacks (consider adding key fingerprints)
+
+## Network Protocol
+
+### Message Types
+
+The application uses a binary protocol with the following message types:
+
+```rust
+enum MessageType {
+    Text(String),              // Plain text message
+    EncryptedText(String),     // Base64 encoded encrypted text
+    File(FileInfo),            // File transfer with metadata
+    Command(Command),          // User commands
+    Status(StatusUpdate),      // Connection status updates
+    Heartbeat,                 // Keep-alive ping
+    Acknowledgment(u64),       // Message delivery confirmation
+    Encryption(EncryptionMessage), // Key exchange messages
+}
+```
+
+### Protocol Flow
+
+1. **Connection Establishment**:
+   ```
+   Peer A                    Peer B
+   |------ TCP Connect ----->|
+   |<--- TCP Accept ---------|
+   |<--- PublicKey --------->|
+   |<--- Encryption Ready -->|
+   ```
+
+2. **Message Exchange**:
+   ```
+   Serialize → Encrypt (optional) → Send → Receive → Decrypt → Deserialize
+   ```
+
+3. **File Transfer**:
+   ```
+   Command → Read File → Create FileInfo → Send → Receive → Verify Hash → Save → Auto-open
+   ```
+
+### Wire Format
+
+Messages are serialized using bincode with the following structure:
+- 8 bytes: Message ID (u64)
+- 12 bytes: Timestamp (SystemTime)
+- Variable: MessageType (bincode serialized)
+
+For backward compatibility, plain text messages are sent as UTF-8 strings with newline terminators.
+
 ### Color Support
 
 The application uses ANSI colors for better readability:
@@ -131,12 +220,64 @@ The application uses ANSI colors for better readability:
 - **Yellow**: Status messages
 - **Red**: Error messages
 
-### Performance Features
+## Architecture
+
+### Module Overview
+
+The application is structured with clear separation of concerns:
+
+```
+src/
+├── main.rs              # CLI interface and entry point
+├── lib.rs               # Core P2P chat implementation
+├── protocol.rs          # Message types and serialization
+├── config.rs            # Configuration management
+├── file_transfer.rs     # File operations and auto-open
+├── commands.rs          # Command parsing and handling
+├── encryption.rs        # End-to-end encryption
+├── peer.rs              # Peer management
+├── error.rs             # Custom error types
+└── colors.rs            # ANSI color codes
+```
+
+### Core Components
+
+1. **P2PChat**: Main orchestrator that handles connection setup and management
+2. **Message Protocol**: Type-safe message handling with serialization
+3. **FileTransfer**: Secure file transfer with integrity verification
+4. **E2EEncryption**: Hybrid encryption implementation
+5. **CommandHandler**: Extensible command system
+6. **Config**: Persistent configuration management
+
+### Async Architecture
+
+The application uses Tokio's async runtime with the following task structure:
+
+```
+Main Thread
+├── Connection Handler
+│   ├── Read Task (incoming messages)
+│   ├── Write Task (outgoing messages)
+│   └── Input Task (user input)
+└── Encryption Handler (key exchange)
+```
+
+### Data Flow
+
+1. **User Input** → Command Parser → Message Creation
+2. **Message Creation** → Encryption (optional) → Serialization
+3. **Network** → Deserialization → Decryption → Display/Action
+4. **File Commands** → File Reading → Transfer → Auto-open
+
+## Performance
+
+### Optimization Features
 
 - **8KB Buffer**: Larger buffer for efficient message handling
 - **Async I/O**: Non-blocking operations with Tokio
-- **Zero-copy**: Minimal memory allocations
+- **Zero-copy**: Minimal memory allocations where possible
 - **Stream Splitting**: Separate read/write for concurrent I/O
+- **Lazy Loading**: Configuration loaded only when needed
 
 ## Usage Examples
 
@@ -223,37 +364,167 @@ The codebase is prepared for:
 
 ## Troubleshooting
 
-### Port Already in Use
+### Common Issues
+
+#### Port Already in Use
 ```
 Error: Port 8080 is already in use!
-To find the process: lsof -i :8080 or netstat -tuln | grep 8080
+```
+**Solutions:**
+- Find the process: `lsof -i :8080` (Linux/macOS) or `netstat -an | findstr :8080` (Windows)
+- Use a different port: `--port 8081`
+- Kill the process using the port
+
+#### Connection Refused
+The application automatically falls back to listening mode if initial connection fails.
+- Verify the target peer is listening
+- Check firewall settings
+- Ensure correct IP address and port
+
+#### File Transfer Issues
+- **Large File Failed**: Check `max_file_size_mb` in config
+- **Hash Mismatch**: Network corruption, retry the transfer
+- **Auto-open Failed**: Verify the system has a default application for the file type
+
+#### Encryption Problems
+- **Key Exchange Failed**: Restart both peers
+- **Messages Not Encrypted**: Check that both peers support encryption
+- **Performance Issues**: Consider disabling encryption for local testing
+
+#### Configuration Issues
+- **Config Not Found**: Run `cargo run -- config` to generate default
+- **Invalid Config**: Check TOML syntax and data types
+- **Permissions**: Ensure write access to config directory
+
+### Debug Mode
+
+Enable detailed logging:
+```bash
+cargo run -- --debug
 ```
 
-### Connection Refused
-The application automatically falls back to listening mode if connection fails.
-
-### Large File Transfer Failed
-Check the `max_file_size_mb` setting in your configuration.
-
-## Development
-
-### Running Tests
-```bash
-# All tests
-cargo test
-
-# Lib tests only
-cargo test --lib
-
-# With output
-cargo test -- --nocapture
+Or set log level in config:
+```toml
+log_level = "debug"
 ```
 
-### Building
+### Network Diagnostics
+
+Test connectivity:
 ```bash
-# Debug build
+# Test if port is reachable
+telnet <peer-ip> <port>
+
+# Check listening ports
+netstat -tuln | grep <port>
+
+# Firewall status
+sudo ufw status  # Ubuntu
+sudo firewall-cmd --list-all  # CentOS/RHEL
+```
+
+## Development Guide
+
+### Building the Project
+
+```bash
+# Clone repository
+git clone https://github.com/cschladetsch/RustP2PChat.git
+cd RustP2PChat
+
+# Debug build (with debug symbols)
 cargo build
 
-# Release build
+# Release build (optimized)
 cargo build --release
+
+# Check for errors without building
+cargo check
+
+# Check with Clippy for code quality
+cargo clippy
+```
+
+### Testing
+
+The project includes comprehensive test coverage:
+
+```bash
+# Run all tests
+cargo test
+
+# Run specific test modules
+cargo test --lib                           # Library tests only
+cargo test --test integration_tests        # Integration tests
+cargo test encryption                      # Encryption-related tests
+
+# Run tests with output
+cargo test -- --nocapture
+
+# Run tests with debug logging
+RUST_LOG=debug cargo test -- --nocapture
+```
+
+### Test Categories
+
+1. **Unit Tests** (15 tests):
+   - Core library functionality
+   - Peer connection handling
+   - Configuration defaults
+   - Command parsing
+
+2. **Integration Tests** (7 tests):
+   - End-to-end communication
+   - File transfer scenarios
+   - Error handling
+   - Protocol compatibility
+
+3. **Security Tests**:
+   - Encryption/decryption cycles
+   - Key exchange protocols
+   - Hash verification
+
+### Code Quality
+
+```bash
+# Format code
+cargo fmt
+
+# Check for issues
+cargo clippy
+
+# Generate documentation
+cargo doc --open
+
+# Check for unused dependencies
+cargo machete
+```
+
+### Adding Features
+
+1. **New Commands**: Add to `protocol.rs` Command enum and `commands.rs` handler
+2. **Message Types**: Extend MessageType enum in `protocol.rs`
+3. **Configuration**: Add fields to Config struct in `config.rs`
+4. **Error Types**: Extend ChatError enum in `error.rs`
+
+### Contributing Guidelines
+
+1. Run tests before submitting: `cargo test`
+2. Follow Rust formatting: `cargo fmt`
+3. Address Clippy warnings: `cargo clippy`
+4. Update documentation for new features
+5. Add tests for new functionality
+
+### Performance Profiling
+
+```bash
+# Build with profiling
+cargo build --release --features=profiling
+
+# Run with perf (Linux)
+perf record --call-graph=dwarf ./target/release/rust-p2p-chat
+perf report
+
+# Memory profiling with valgrind
+valgrind --tool=massif ./target/release/rust-p2p-chat
 ```
