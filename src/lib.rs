@@ -21,9 +21,9 @@ use crate::colors::Colors;
 use crate::error::{ChatError, Result};
 use crate::protocol::{Message, MessageType, Command, StatusUpdate, EncryptionMessage};
 use crate::config::Config;
-use crate::file_transfer::FileTransfer;
 use crate::commands::CommandHandler;
 use crate::encryption::E2EEncryption;
+use crate::peer::PeerManager;
 
 
 // Simple P2P Chat implementation
@@ -97,6 +97,9 @@ pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Re
     let enc_clone2 = encryption.clone();
     let tx_clone = tx.clone();
     
+    // Initialize file transfer
+    let file_transfer = Arc::new(file_transfer::FileTransfer::new(config.max_file_size_mb));
+    
     // Start encryption handshake
     tokio::spawn(async move {
         tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
@@ -108,9 +111,9 @@ pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Re
     });
     
     // Spawn tasks with encryption
-    let read_handle = tokio::spawn(read_enhanced_messages(reader, config.buffer_size, enc_clone2.clone(), tx.clone()));
+    let read_handle = tokio::spawn(read_enhanced_messages(reader, config.clone(), enc_clone2.clone(), tx.clone(), file_transfer.clone()));
     let write_handle = tokio::spawn(write_enhanced_messages(writer, rx));
-    let input_handle = tokio::spawn(handle_enhanced_input(tx, config, encryption));
+    let input_handle = tokio::spawn(handle_enhanced_input(tx, config, encryption, file_transfer));
     
     // Wait for any task to complete
     tokio::select! {
@@ -124,11 +127,12 @@ pub async fn handle_enhanced_connection(stream: TcpStream, config: Config) -> Re
 
 async fn read_enhanced_messages(
     mut reader: OwnedReadHalf, 
-    buffer_size: usize,
+    config: Config,
     encryption: Arc<tokio::sync::Mutex<E2EEncryption>>,
-    tx: mpsc::Sender<Message>
+    tx: mpsc::Sender<Message>,
+    file_transfer: Arc<file_transfer::FileTransfer>
 ) -> Result<()> {
-    let mut buffer = vec![0; buffer_size];
+    let mut buffer = vec![0; config.buffer_size];
     
     loop {
         match reader.read(&mut buffer).await {
@@ -139,7 +143,7 @@ async fn read_enhanced_messages(
             Ok(n) => {
                 // Try new protocol first
                 match Message::deserialize(&buffer[..n]) {
-                    Ok(message) => handle_message(message, encryption.clone(), tx.clone()).await?,
+                    Ok(message) => handle_message(message, encryption.clone(), tx.clone(), &config, &file_transfer).await?,
                     Err(_) => {
                         // Fallback to plain text
                         let text = String::from_utf8_lossy(&buffer[..n]).trim_end().to_string();
@@ -161,7 +165,9 @@ async fn read_enhanced_messages(
 async fn handle_message(
     message: Message,
     encryption: Arc<tokio::sync::Mutex<E2EEncryption>>,
-    tx: mpsc::Sender<Message>
+    tx: mpsc::Sender<Message>,
+    config: &Config,
+    file_transfer: &Arc<file_transfer::FileTransfer>
 ) -> Result<()> {
     match message.msg_type {
         MessageType::Text(text) => {
@@ -189,6 +195,27 @@ async fn handle_message(
         MessageType::File(file_info) => {
             println!("\n{}📁 Receiving file: {} ({} bytes){}", 
                     Colors::YELLOW, file_info.name, file_info.size, Colors::RESET);
+            
+            // Save the file
+            let download_dir = config.download_path();
+            match file_transfer.save_file(&file_info, &download_dir).await {
+                Ok(file_path) => {
+                    println!("{}✓ File saved to: {}{}", 
+                            Colors::GREEN, file_path.display(), Colors::RESET);
+                    
+                    // Check if auto-open is enabled and if it's a media file
+                    if config.auto_open_media && 
+                       file_transfer::FileTransfer::is_media_file(&file_info.name, &config.media_extensions) {
+                        println!("{}🎬 Opening media file...{}", Colors::CYAN, Colors::RESET);
+                        if let Err(e) = file_transfer::FileTransfer::open_file(&file_path) {
+                            eprintln!("{}Failed to open file: {}{}", Colors::RED, e, Colors::RESET);
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("{}Failed to save file: {}{}", Colors::RED, e, Colors::RESET);
+                }
+            }
         }
         MessageType::Status(status) => {
             match status {
@@ -285,13 +312,14 @@ async fn write_enhanced_messages(mut writer: OwnedWriteHalf, mut rx: mpsc::Recei
 
 async fn handle_enhanced_input(
     tx: mpsc::Sender<Message>,
-    config: Config,
-    encryption: Arc<tokio::sync::Mutex<E2EEncryption>>
+    mut config: Config,
+    encryption: Arc<tokio::sync::Mutex<E2EEncryption>>,
+    file_transfer: Arc<file_transfer::FileTransfer>
 ) -> Result<()> {
     let reader = BufReader::new(tokio::io::stdin());
     let mut lines = reader.lines();
-    let _command_handler = CommandHandler::new(config.clone());
-    let file_transfer = FileTransfer::new(config.max_file_size_mb);
+    let mut command_handler = CommandHandler::new(config.clone());
+    let peer_manager = PeerManager::new().0;
     
     println!("{}Type messages and press Enter to send (Ctrl+C to exit){}", Colors::DIM, Colors::RESET);
     print!("{}{}You:{} ", Colors::BOLD, Colors::BRIGHT_GREEN, Colors::RESET);
@@ -306,11 +334,8 @@ async fn handle_enhanced_input(
 
         // Check for commands
         if let Some(command) = CommandHandler::parse_command(&line) {
-            match command {
+            match &command {
                 Command::Quit => break,
-                Command::Help => {
-                    println!("{}", get_help_text());
-                }
                 Command::SendFile(path) => {
                     match file_transfer.prepare_file(&PathBuf::from(&path)).await {
                         Ok(file_info) => {
@@ -325,8 +350,20 @@ async fn handle_enhanced_input(
                         Err(e) => println!("{}✗ Error: {}{}", Colors::RED, e, Colors::RESET),
                     }
                 }
+                Command::ToggleAutoOpen => {
+                    config.auto_open_media = !config.auto_open_media;
+                    config.save()?;
+                    command_handler = CommandHandler::new(config.clone());
+                    println!("{}✓ Auto-open media: {}{}", 
+                            Colors::GREEN, 
+                            if config.auto_open_media { "enabled" } else { "disabled" }, 
+                            Colors::RESET);
+                }
                 _ => {
-                    println!("{}Command not yet implemented{}", Colors::YELLOW, Colors::RESET);
+                    match command_handler.handle_command(command, &peer_manager).await {
+                        Ok(response) => println!("{}", response),
+                        Err(e) => println!("{}✗ Error: {}{}", Colors::RED, e, Colors::RESET),
+                    }
                 }
             }
         } else {
@@ -352,14 +389,6 @@ async fn handle_enhanced_input(
     Ok(())
 }
 
-fn get_help_text() -> &'static str {
-    r#"Available commands:
-  /help, /?      - Show this help
-  /quit, /exit   - Exit the chat
-  /send <file>   - Send a file
-  /info          - Show connection info
-  /nick <name>   - Set nickname"#
-}
 
 // Keep original simple implementation for backward compatibility
 pub struct P2PPeer {

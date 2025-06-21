@@ -17,6 +17,9 @@ pub struct Config {
     pub save_history: bool,
     pub history_file: Option<PathBuf>,
     pub max_file_size_mb: u64,
+    pub download_dir: Option<PathBuf>,
+    pub auto_open_media: bool,
+    pub media_extensions: Vec<String>,
 }
 
 impl Default for Config {
@@ -33,6 +36,15 @@ impl Default for Config {
             save_history: true,
             history_file: None,
             max_file_size_mb: 100,
+            download_dir: None,
+            auto_open_media: true,
+            media_extensions: vec![
+                "jpg".to_string(), "jpeg".to_string(), "png".to_string(), "gif".to_string(), 
+                "bmp".to_string(), "webp".to_string(), "svg".to_string(),
+                "mp4".to_string(), "avi".to_string(), "mov".to_string(), "wmv".to_string(),
+                "mp3".to_string(), "wav".to_string(), "flac".to_string(), "aac".to_string(),
+                "pdf".to_string(), "doc".to_string(), "docx".to_string(), "txt".to_string(),
+            ],
         }
     }
 }
@@ -76,5 +88,19 @@ impl Config {
         }
         ProjectDirs::from("com", "rustchat", "p2p-chat")
             .map(|dirs| dirs.data_dir().join("chat_history.json"))
+    }
+
+    pub fn download_path(&self) -> PathBuf {
+        if let Some(ref path) = self.download_dir {
+            return path.clone();
+        }
+        // Default to Downloads folder or current directory
+        if let Some(dirs) = directories::UserDirs::new() {
+            if let Some(download_dir) = dirs.download_dir() {
+                return download_dir.to_path_buf();
+            }
+        }
+        // Fallback to current directory
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
     }
 }

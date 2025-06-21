@@ -34,13 +34,18 @@ Available commands during chat:
 | `/send <filename>` | Send a file to the peer |
 | `/info` | Show connection information |
 | `/nick <name>` | Set your nickname |
+| `/autoopen` or `/auto` | Toggle auto-open for media files |
 
 ### File Transfer
 
 - **Size Limit**: Default 100MB (configurable)
 - **Hash Verification**: SHA256 integrity checking
 - **Progress Tracking**: Real-time transfer progress
-- **Auto-save**: Files saved to `downloads/` directory
+- **Auto-save**: Files saved to system Downloads folder or current directory
+- **Auto-open Media**: Automatically open received media files (images, videos, audio, PDFs)
+  - Can be toggled with `/autoopen` command
+  - Platform-specific: Uses `open` on macOS, `start` on Windows, `xdg-open` on Linux
+  - Supported formats: jpg, jpeg, png, gif, bmp, webp, svg, mp4, avi, mov, wmv, mp3, wav, flac, aac, pdf, doc, docx, txt
 
 ### Configuration System
 
@@ -61,6 +66,9 @@ enable_encryption = true
 log_level = "info"
 save_history = true
 max_file_size_mb = 100
+download_dir = "/path/to/downloads"  # Optional, defaults to system Downloads folder
+auto_open_media = true               # Automatically open received media files
+media_extensions = ["jpg", "png", "mp4", "pdf"]  # File types to auto-open
 ```
 
 ### End-to-End Encryption

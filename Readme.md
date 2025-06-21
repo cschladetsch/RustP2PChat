@@ -33,7 +33,8 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 - **Custom Error Types**: Replaced generic errors with specific ChatError types
 - **Enhanced Message Protocol**: Support for text, files, commands, and status updates
 - **File Transfer**: Send files up to 100MB (configurable) with progress tracking
-- **Command System**: Built-in commands like /help, /quit, /send
+- **Auto-open Media**: Automatically open received images, videos, and documents
+- **Command System**: Built-in commands like /help, /quit, /send, /autoopen
 - **Configuration Support**: TOML-based config files with customizable settings
 - **CLI Arguments**: Full command-line interface with clap
 - **Logging**: Configurable logging levels with tracing
@@ -720,6 +721,19 @@ Once connected, use the `/send` command:
 ```
 You: /send myfile.pdf
 ✓ File sent
+```
+
+When receiving files:
+```
+📁 Receiving file: image.jpg (1234567 bytes)
+✓ File saved to: /Users/alice/Downloads/image.jpg
+🎬 Opening media file...
+```
+
+Media files (images, videos, PDFs) are automatically opened by default. Toggle this with:
+```
+You: /autoopen
+✓ Auto-open media: disabled
 ```
 
 ### Testing Encryption

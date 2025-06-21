@@ -36,6 +36,7 @@ pub enum Command {
     ListPeers,
     SendFile(String),
     SetNickname(String),
+    ToggleAutoOpen,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

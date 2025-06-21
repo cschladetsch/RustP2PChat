@@ -41,6 +41,7 @@ impl CommandHandler {
                     None
                 }
             }
+            "autoopen" | "auto" => Some(Command::ToggleAutoOpen),
             _ => None,
         }
     }
@@ -61,6 +62,11 @@ impl CommandHandler {
             }
             Command::Quit => Ok("Goodbye!".to_string()),
             Command::SendFile(path) => Ok(format!("Preparing to send file: {}", path)),
+            Command::ToggleAutoOpen => {
+                self.config.auto_open_media = !self.config.auto_open_media;
+                self.config.save()?;
+                Ok(format!("Auto-open media: {}", if self.config.auto_open_media { "enabled" } else { "disabled" }))
+            }
         }
     }
 
@@ -71,6 +77,7 @@ impl CommandHandler {
   /peers, /list      - List connected peers
   /nick <name>       - Set your nickname
   /send <file>       - Send a file to peer(s)
+  /autoopen, /auto   - Toggle auto-open for media files
   /quit, /exit       - Exit the chat
 
 Type normally to send messages to all connected peers."#.to_string()

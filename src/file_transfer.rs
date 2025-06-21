@@ -1,5 +1,6 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs;
+use std::process::Command;
 use sha2::{Sha256, Digest};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -51,7 +52,7 @@ impl FileTransfer {
         })
     }
 
-    pub async fn save_file(&self, file_info: &FileInfo, download_dir: &Path) -> Result<()> {
+    pub async fn save_file(&self, file_info: &FileInfo, download_dir: &Path) -> Result<PathBuf> {
         if file_info.size > self.max_file_size {
             return Err(ChatError::FileTransfer(format!(
                 "File too large: {} MB (max: {} MB)",
@@ -73,7 +74,7 @@ impl FileTransfer {
         let mut file = File::create(&file_path).await?;
         file.write_all(&file_info.data).await?;
 
-        Ok(())
+        Ok(file_path)
     }
 
     pub fn create_progress_message(filename: &str, current: u64, total: u64) -> Message {
@@ -85,6 +86,51 @@ impl FileTransfer {
                 current,
                 total,
             )),
+        }
+    }
+
+    /// Opens a file using the platform's default application
+    pub fn open_file(path: &Path) -> Result<()> {
+        let result = if cfg!(target_os = "macos") {
+            Command::new("open")
+                .arg(path)
+                .spawn()
+        } else if cfg!(target_os = "windows") {
+            Command::new("cmd")
+                .args(["/C", "start", "", &path.to_string_lossy()])
+                .spawn()
+        } else if cfg!(target_os = "linux") {
+            // Try xdg-open first, then fallback to other options
+            Command::new("xdg-open")
+                .arg(path)
+                .spawn()
+                .or_else(|_| {
+                    Command::new("gnome-open")
+                        .arg(path)
+                        .spawn()
+                })
+                .or_else(|_| {
+                    Command::new("kde-open")
+                        .arg(path)
+                        .spawn()
+                })
+        } else {
+            return Err(ChatError::FileTransfer("Unsupported platform for opening files".to_string()));
+        };
+
+        match result {
+            Ok(_) => Ok(()),
+            Err(e) => Err(ChatError::FileTransfer(format!("Failed to open file: {}", e))),
+        }
+    }
+
+    /// Checks if a file extension indicates it's a media file
+    pub fn is_media_file(filename: &str, media_extensions: &[String]) -> bool {
+        if let Some(extension) = Path::new(filename).extension() {
+            let ext = extension.to_string_lossy().to_lowercase();
+            media_extensions.iter().any(|media_ext| media_ext.to_lowercase() == ext)
+        } else {
+            false
         }
     }
 }

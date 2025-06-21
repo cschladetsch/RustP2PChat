@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased] - 2025-06-21
 
 ### Added
+- **Auto-open Media Files**: Automatically open received media files after download
+  - Platform-specific implementation (macOS: `open`, Windows: `start`, Linux: `xdg-open`)
+  - Configurable via `/autoopen` command during chat
+  - Support for images (jpg, png, gif, etc.), videos (mp4, avi, etc.), audio, and documents
+  - Files are saved to system Downloads folder by default
+  - New config options: `auto_open_media`, `download_dir`, `media_extensions`
 - **End-to-End Encryption**: Full implementation of 1024-bit RSA + AES-256-GCM encryption
   - Automatic key exchange on connection
   - Visual encryption indicators (🔒 icon)
@@ -23,6 +29,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Improved code quality with clippy recommendations
 - Updated integration tests for better maintainability
+- File transfer now saves to system Downloads folder instead of local `downloads/` directory
 
 ## [0.2.0] - 2024-12-22
 
