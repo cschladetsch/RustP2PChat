@@ -132,8 +132,10 @@ async fn test_connection_refused() {
 
 #[tokio::test]
 async fn test_config_with_nickname() {
-    let mut config = Config::default();
-    config.nickname = Some("TestUser".to_string());
+    let config = Config {
+        nickname: Some("TestUser".to_string()),
+        ..Default::default()
+    };
     
     let chat = P2PChat::new(config);
     assert!(chat.is_ok());
