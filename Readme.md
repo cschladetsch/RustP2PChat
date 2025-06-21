@@ -2,6 +2,15 @@
 
 A blazing-fast, truly decentralized peer-to-peer chat application built with Rust and Tokio. Experience real-time communication without any intermediary servers - just pure, direct connections between peers!
 
+## 🚀 Key Highlights
+
+- 🔒 **Military-Grade Encryption**: 1024-bit RSA + AES-256-GCM end-to-end encryption
+- ⚡ **Zero Configuration**: Works instantly with just IP:port - no setup required
+- 🌐 **True P2P**: Direct peer connections, no central servers or intermediaries
+- 📁 **File Transfer**: Send files up to 100MB with progress tracking
+- 🎨 **Rich Terminal UI**: Colorful interface with encryption status indicators
+- 🔧 **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
+
 ## What Makes This Special?
 
 Unlike traditional chat applications that rely on central servers, **Rust P2P Chat** establishes direct TCP connections between peers. There's no "server" and "client" in the traditional sense - both peers are equal participants in the conversation. The first peer simply waits for a connection, while the second initiates it. Once connected, both peers have identical capabilities!
@@ -591,10 +600,20 @@ The codebase is prepared for these features:
 - 🔄 Perfect Forward Secrecy - Can enhance current encryption
 - 🔄 Certificate pinning - For enhanced security
 
-## Contributing
+## 🛡️ Security Notice
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+This implementation uses 1024-bit RSA keys for demonstration and educational purposes. For production use in high-security environments, consider upgrading to 2048-bit or 4096-bit RSA keys, or implementing elliptic curve cryptography (ECC) for better performance and security.
 
-## License
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. Some areas where contributions would be valuable:
+
+- Enhanced encryption algorithms (ECC, post-quantum cryptography)
+- GUI interface development
+- Mobile platform support
+- Peer discovery mechanisms
+- Network protocol optimizations
+
+## 📄 License
 
 This project is open source and available under the MIT License.
