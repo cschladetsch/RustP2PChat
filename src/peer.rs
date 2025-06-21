@@ -57,7 +57,7 @@ impl PeerManager {
     pub async fn broadcast(&self, message: Message, exclude: Option<&str>) -> Result<()> {
         let peers = self.peers.lock().await;
         for (id, peer) in peers.iter() {
-            if exclude.map_or(true, |ex| ex != id) {
+            if exclude.is_none_or(|ex| ex != id) {
                 let _ = peer.tx.send(message.clone()).await;
             }
         }
