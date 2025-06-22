@@ -2,9 +2,9 @@
 
 This directory contains a comprehensive collection of shell scripts for testing, demonstrating, and managing the Rust P2P Chat application. These scripts automate common development workflows and provide various testing scenarios.
 
-## 📁 Script Overview
+## Script Overview
 
-### 🧪 Testing Scripts
+### Testing Scripts
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
@@ -16,7 +16,7 @@ This directory contains a comprehensive collection of shell scripts for testing,
 | **`test_tmux.sh`** | Split-screen terminal testing using tmux | `./test_tmux.sh` |
 | **`test_chat.sh`** | Basic chat functionality testing | `./test_chat.sh` |
 
-### 🎬 Demo Scripts
+### Demo Scripts
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
@@ -24,7 +24,7 @@ This directory contains a comprehensive collection of shell scripts for testing,
 | **`demo_chat.sh`** | Interactive chat demonstration | `./demo_chat.sh` |
 | **`demo_colors.sh`** | Terminal color and formatting tests | `./demo_colors.sh` |
 
-## 🚀 Script Descriptions
+## Script Descriptions
 
 ### `quick_test.sh` - Rapid Testing
 **Purpose**: Fast two-peer testing with automatic setup
@@ -146,7 +146,7 @@ This directory contains a comprehensive collection of shell scripts for testing,
 - Cross-platform color support
 - Terminal compatibility testing
 
-## 🛠️ Usage Guidelines
+## Usage Guidelines
 
 ### Making Scripts Executable
 ```bash
@@ -175,15 +175,15 @@ chmod +x shell/quick_test.sh
 ### Development Testing
 ```bash
 # Test specific features
-./shell/test_encryption.sh    # Security features
-./shell/test_p2p.sh          # Network functionality
+./shell/test_encryption.sh  # Security features
+./shell/test_p2p.sh     # Network functionality
 
 # Demo for stakeholders
-./shell/demo.sh              # Feature overview
-./shell/demo_chat.sh         # Interactive demo
+./shell/demo.sh       # Feature overview
+./shell/demo_chat.sh     # Interactive demo
 ```
 
-## 🔧 Configuration Options
+## Configuration Options
 
 ### Environment Variables
 Most scripts support these environment variables:
@@ -226,19 +226,19 @@ Common parameters across scripts:
 --no-cleanup
 ```
 
-## 🧪 Testing Patterns
+## Testing Patterns
 
 ### Unit Testing
 ```bash
 # Test individual components
-./shell/test_encryption.sh   # Crypto functions
-./shell/test_p2p.sh         # Network layer
+./shell/test_encryption.sh  # Crypto functions
+./shell/test_p2p.sh     # Network layer
 ```
 
 ### Integration Testing
 ```bash
 # Test complete workflows
-./shell/automated_test.sh    # End-to-end scenarios
+./shell/automated_test.sh  # End-to-end scenarios
 ./shell/comprehensive_test.sh # Full feature testing
 ```
 
@@ -252,44 +252,44 @@ Common parameters across scripts:
 ### Visual Testing
 ```bash
 # Interactive verification
-./shell/test_tmux.sh         # Split-screen testing
-./shell/demo_chat.sh         # Guided demonstration
+./shell/test_tmux.sh     # Split-screen testing
+./shell/demo_chat.sh     # Guided demonstration
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
 1. **Permission Denied**:
-   ```bash
-   chmod +x shell/*.sh
-   ```
+```bash
+chmod +x shell/*.sh
+```
 
 2. **Port Already in Use**:
-   ```bash
-   # Scripts automatically handle cleanup
-   pkill -f rust-p2p-chat
-   ./shell/quick_test.sh 9000 9001
-   ```
+```bash
+# Scripts automatically handle cleanup
+pkill -f rust-p2p-chat
+./shell/quick_test.sh 9000 9001
+```
 
 3. **tmux Not Available**:
-   ```bash
-   # Install tmux
-   sudo apt install tmux      # Ubuntu/Debian
-   brew install tmux          # macOS
-   ```
+```bash
+# Install tmux
+sudo apt install tmux   # Ubuntu/Debian
+brew install tmux     # macOS
+```
 
 4. **Script Hangs**:
-   ```bash
-   # Use Ctrl+C to trigger cleanup
-   # Or kill processes manually
-   pkill -f rust-p2p-chat
-   ```
+```bash
+# Use Ctrl+C to trigger cleanup
+# Or kill processes manually
+pkill -f rust-p2p-chat
+```
 
 ### Debug Mode
 Enable debug output in any script:
 ```bash
-RUST_LOG=debug ./shell/quick_test.sh
+RUST_LOG=debug./shell/quick_test.sh
 ```
 
 ### Log Analysis
@@ -302,23 +302,23 @@ cat peer1.log peer2.log
 tail -f peer1.log peer2.log
 ```
 
-## 🔍 Script Internals
+## Script Internals
 
 ### Error Handling Pattern
 All scripts follow this error handling pattern:
 ```bash
-set -euo pipefail    # Strict error handling
+set -euo pipefail  # Strict error handling
 
 error_exit() {
-    echo "Error: $1" >&2
-    cleanup
-    exit 1
+echo "Error: $1" >&2
+cleanup
+exit 1
 }
 
 cleanup() {
-    # Kill processes
-    # Remove temporary files
-    # Reset terminal state
+# Kill processes
+# Remove temporary files
+# Reset terminal state
 }
 
 trap cleanup INT TERM EXIT
@@ -327,11 +327,11 @@ trap cleanup INT TERM EXIT
 ### Color Output
 Consistent color scheme across scripts:
 ```bash
-RED='\033[0;31m'      # Errors
-GREEN='\033[0;32m'    # Success
-YELLOW='\033[1;33m'   # Warnings
-BLUE='\033[0;34m'     # Info
-NC='\033[0m'          # No Color
+RED='\033[0;31m'   # Errors
+GREEN='\033[0;32m'  # Success
+YELLOW='\033[1;33m'  # Warnings
+BLUE='\033[0;34m'   # Info
+NC='\033[0m'     # No Color
 ```
 
 ### Process Management
@@ -339,34 +339,34 @@ Scripts use proper process management:
 ```bash
 # Background processes with PID tracking
 command &
-PROCESS_PID=$!
+PROCESS_PID=$.
 
 # Cleanup with timeout
 timeout 5 kill $PROCESS_PID || kill -9 $PROCESS_PID
 ```
 
-## 📈 Continuous Integration
+## Continuous Integration
 
 These scripts are designed for CI/CD integration:
 
 ### GitHub Actions
 ```yaml
 - name: Run P2P Chat Tests
-  run: |
-    ./shell/automated_test.sh
-    ./shell/comprehensive_test.sh
+run: |
+./shell/automated_test.sh
+./shell/comprehensive_test.sh
 ```
 
 ### Local CI
 ```bash
 # Run all tests
 for script in shell/test_*.sh; do
-    echo "Running $script"
-    $script || exit 1
+echo "Running $script"
+$script || exit 1
 done
 ```
 
-## 🚀 Future Enhancements
+## Future Enhancements
 
 ### Planned Script Additions
 - **`benchmark.sh`** - Performance benchmarking
@@ -380,7 +380,7 @@ done
 - **Parallel execution** - Concurrent test running
 - **Test data generation** - Synthetic test scenarios
 
-## 📚 Best Practices
+## Best Practices
 
 ### Script Development
 1. **Use `set -euo pipefail`** for strict error handling

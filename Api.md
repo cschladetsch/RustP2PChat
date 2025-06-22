@@ -6,11 +6,11 @@ This document provides technical API documentation for developers who want to in
 
 ## Documentation Status
 
-✅ **Complete API Documentation**: All public modules, functions, and types have detailed rustdoc comments with examples  
-✅ **Security Documentation**: Security considerations and best practices included throughout  
-✅ **Thread Safety Documentation**: Concurrency guarantees and usage patterns documented  
-✅ **Error Handling Documentation**: Detailed error types and patterns with examples  
-✅ **Working Code Examples**: All examples are tested and functional  
+**Complete API Documentation**: All public modules, functions, and types have detailed rustdoc comments with examples 
+**Security Documentation**: Security considerations and best practices included throughout 
+**Thread Safety Documentation**: Concurrency guarantees and usage patterns documented 
+**Error Handling Documentation**: Detailed error types and patterns with examples 
+**Working Code Examples**: All examples are tested and functional 
 
 **Generate API Documentation**:
 ```bash
@@ -27,21 +27,21 @@ The application uses a strongly-typed message protocol defined in `src/protocol.
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Message {
-    pub id: u64,
-    pub timestamp: SystemTime,
-    pub msg_type: MessageType,
+pub id: u64,
+pub timestamp: SystemTime,
+pub msg_type: MessageType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MessageType {
-    Text(String),
-    EncryptedText(String),
-    File(FileInfo),
-    Command(Command),
-    Status(StatusUpdate),
-    Heartbeat,
-    Acknowledgment(u64),
-    Encryption(EncryptionMessage),
+Text(String),
+EncryptedText(String),
+File(FileInfo),
+Command(Command),
+Status(StatusUpdate),
+Heartbeat,
+Acknowledgment(u64),
+Encryption(EncryptionMessage),
 }
 ```
 
@@ -50,10 +50,10 @@ pub enum MessageType {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileInfo {
-    pub name: String,
-    pub size: u64,
-    pub hash: String,    // SHA256 hash
-    pub data: Vec<u8>,   // File contents
+pub name: String,
+pub size: u64,
+pub hash: String,  // SHA256 hash
+pub data: Vec<u8>,  // File contents
 }
 ```
 
@@ -62,13 +62,13 @@ pub struct FileInfo {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Command {
-    Quit,
-    Help,
-    Info,
-    ListPeers,
-    SendFile(String),
-    SetNickname(String),
-    ToggleAutoOpen,
+Quit,
+Help,
+Info,
+ListPeers,
+SendFile(String),
+SetNickname(String),
+ToggleAutoOpen,
 }
 ```
 
@@ -77,20 +77,20 @@ pub enum Command {
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
-    pub nickname: Option<String>,
-    pub default_port: u16,
-    pub buffer_size: usize,
-    pub heartbeat_interval_secs: u64,
-    pub reconnect_attempts: u32,
-    pub reconnect_delay_secs: u64,
-    pub enable_encryption: bool,
-    pub log_level: String,
-    pub save_history: bool,
-    pub history_file: Option<PathBuf>,
-    pub max_file_size_mb: u64,
-    pub download_dir: Option<PathBuf>,
-    pub auto_open_media: bool,
-    pub media_extensions: Vec<String>,
+pub nickname: Option<String>,
+pub default_port: u16,
+pub buffer_size: usize,
+pub heartbeat_interval_secs: u64,
+pub reconnect_attempts: u32,
+pub reconnect_delay_secs: u64,
+pub enable_encryption: bool,
+pub log_level: String,
+pub save_history: bool,
+pub history_file: Option<PathBuf>,
+pub max_file_size_mb: u64,
+pub download_dir: Option<PathBuf>,
+pub auto_open_media: bool,
+pub media_extensions: Vec<String>,
 }
 ```
 
@@ -100,8 +100,8 @@ pub struct Config {
 
 ```rust
 impl P2PChat {
-    pub fn new(config: Config) -> Result<Self>;
-    pub async fn start(&mut self, port: u16, connect_addr: Option<String>) -> Result<()>;
+pub fn new(config: Config) -> Result<Self>;
+pub async fn start(&mut self, port: u16, connect_addr: Option<String>) -> Result<()>;
 }
 ```
 
@@ -109,13 +109,13 @@ impl P2PChat {
 
 ```rust
 impl FileTransfer {
-    pub fn new(max_file_size_mb: u64) -> Self;
-    
-    pub async fn prepare_file(&self, path: &Path) -> Result<FileInfo>;
-    pub async fn save_file(&self, file_info: &FileInfo, download_dir: &Path) -> Result<PathBuf>;
-    
-    pub fn open_file(path: &Path) -> Result<()>;
-    pub fn is_media_file(filename: &str, media_extensions: &[String]) -> bool;
+pub fn new(max_file_size_mb: u64) -> Self;
+
+pub async fn prepare_file(&self, path: &Path) -> Result<FileInfo>;
+pub async fn save_file(&self, file_info: &FileInfo, download_dir: &Path) -> Result<PathBuf>;
+
+pub fn open_file(path: &Path) -> Result<()>;
+pub fn is_media_file(filename: &str, media_extensions: &[String]) -> bool;
 }
 ```
 
@@ -123,10 +123,10 @@ impl FileTransfer {
 
 ```rust
 impl Config {
-    pub fn load() -> Result<Self>;
-    pub fn save(&self) -> Result<()>;
-    pub fn download_path(&self) -> PathBuf;
-    pub fn history_path(&self) -> Option<PathBuf>;
+pub fn load() -> Result<Self>;
+pub fn save(&self) -> Result<()>;
+pub fn download_path(&self) -> PathBuf;
+pub fn history_path(&self) -> Option<PathBuf>;
 }
 ```
 
@@ -134,14 +134,14 @@ impl Config {
 
 ```rust
 impl E2EEncryption {
-    pub fn new() -> Result<Self>;
-    pub fn generate_keypair(&mut self) -> Result<()>;
-    pub fn get_public_key_base64(&self) -> Result<String>;
-    pub fn set_peer_public_key(&mut self, key: &str) -> Result<()>;
-    pub fn generate_shared_key(&self) -> Result<String>;
-    pub fn encrypt_message(&self, plaintext: &str) -> Result<String>;
-    pub fn decrypt_message(&self, encrypted: &str) -> Result<String>;
-    pub fn is_ready(&self) -> bool;
+pub fn new() -> Result<Self>;
+pub fn generate_keypair(&mut self) -> Result<()>;
+pub fn get_public_key_base64(&self) -> Result<String>;
+pub fn set_peer_public_key(&mut self, key: &str) -> Result<()>;
+pub fn generate_shared_key(&self) -> Result<String>;
+pub fn encrypt_message(&self, plaintext: &str) -> Result<String>;
+pub fn decrypt_message(&self, encrypted: &str) -> Result<String>;
+pub fn is_ready(&self) -> bool;
 }
 ```
 
@@ -149,9 +149,9 @@ impl E2EEncryption {
 
 ```rust
 impl CommandHandler {
-    pub fn new(config: Config) -> Self;
-    pub fn parse_command(input: &str) -> Option<Command>;
-    pub async fn handle_command(&mut self, command: Command, peer_manager: &PeerManager) -> Result<String>;
+pub fn new(config: Config) -> Self;
+pub fn parse_command(input: &str) -> Option<Command>;
+pub async fn handle_command(&mut self, command: Command, peer_manager: &PeerManager) -> Result<String>;
 }
 ```
 
@@ -161,10 +161,10 @@ impl CommandHandler {
 
 1. **TCP Connection**: Standard TCP handshake
 2. **Encryption Handshake** (if enabled):
-   - Peer A sends RSA public key
-   - Peer B sends RSA public key
-   - Both peers generate shared AES key
-   - Encryption ready signal
+- Peer A sends RSA public key
+- Peer B sends RSA public key
+- Both peers generate shared AES key
+- Encryption ready signal
 3. **Message Exchange**: Binary or text protocol
 
 ### Message Serialization
@@ -192,29 +192,29 @@ For backward compatibility, plain text messages use UTF-8 encoding with newline 
 ```rust
 #[derive(Debug, thiserror::Error)]
 pub enum ChatError {
-    #[error("Failed to bind to port {port}: {source}")]
-    BindFailed { port: u16, source: std::io::Error },
-    
-    #[error("Failed to connect to peer: {0}")]
-    ConnectFailed(String),
-    
-    #[error("Peer disconnected")]
-    PeerDisconnected,
-    
-    #[error("Protocol error: {0}")]
-    Protocol(String),
-    
-    #[error("File transfer error: {0}")]
-    FileTransfer(String),
-    
-    #[error("Configuration error: {0}")]
-    Configuration(String),
-    
-    #[error("Encryption error: {0}")]
-    Encryption(String),
-    
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
+#[error("Failed to bind to port {port}: {source}")]
+BindFailed { port: u16, source: std::io::Error },
+
+#[error("Failed to connect to peer: {0}")]
+ConnectFailed(String),
+
+#[error("Peer disconnected")]
+PeerDisconnected,
+
+#[error("Protocol error: {0}")]
+Protocol(String),
+
+#[error("File transfer error: {0}")]
+FileTransfer(String),
+
+#[error("Configuration error: {0}")]
+Configuration(String),
+
+#[error("Encryption error: {0}")]
+Encryption(String),
+
+#[error("IO error: {0}")]
+Io(#[from] std::io::Error),
 }
 ```
 
@@ -243,9 +243,9 @@ The `E2EEncryption` trait can be implemented for different encryption backends:
 
 ```rust
 trait Encryption {
-    fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>>;
-    fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>>;
-    fn key_exchange(&mut self, peer_key: &[u8]) -> Result<()>;
+fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>>;
+fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>>;
+fn key_exchange(&mut self, peer_key: &[u8]) -> Result<()>;
 }
 ```
 
@@ -320,10 +320,10 @@ use rust_p2p_chat::{P2PChat, Config};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::default();
-    let mut chat = P2PChat::new(config)?;
-    chat.start(8080, None).await?;
-    Ok(())
+let config = Config::default();
+let mut chat = P2PChat::new(config)?;
+chat.start(8080, None).await?;
+Ok(())
 }
 ```
 
@@ -367,7 +367,7 @@ The application includes macOS installer functionality accessible through the bu
 ### Cross-Platform Build Configuration
 
 ```toml
-# .cargo/config.toml
+#.cargo/config.toml
 [target.x86_64-apple-darwin]
 linker = "x86_64-apple-darwin14-clang"
 
@@ -380,10 +380,10 @@ linker = "aarch64-apple-darwin14-clang"
 ```
 RustP2PChat.app/
 ├── Contents/
-│   ├── Info.plist          # App metadata
-│   ├── MacOS/
-│   │   └── RustP2PChat     # Universal binary
-│   └── Resources/          # App resources
+│  ├── Info.plist     # App metadata
+│  ├── MacOS/
+│  │  └── RustP2PChat   # Universal binary
+│  └── Resources/     # App resources
 ```
 
 ## CLI Integration
@@ -396,14 +396,14 @@ The application provides a complete CLI interface in `src/main.rs` that demonstr
 rust-p2p-chat [OPTIONS] [SUBCOMMAND]
 
 OPTIONS:
-    -p, --port <PORT>              Port to listen on [default: 8080]
-    -c, --connect <ADDRESS>        Peer address to connect to
-    -n, --nickname <NAME>          Set your nickname
-    -d, --debug                    Enable debug logging
-        --no-encryption            Disable encryption
+-p, --port <PORT>       Port to listen on [default: 8080]
+-c, --connect <ADDRESS>    Peer address to connect to
+-n, --nickname <NAME>     Set your nickname
+-d, --debug          Enable debug logging
+--no-encryption      Disable encryption
 
 SUBCOMMANDS:
-    config    Generate and save default configuration
+config  Generate and save default configuration
 ```
 
 ## Module Documentation
@@ -416,7 +416,7 @@ All source modules include comprehensive inline documentation. Key modules:
 - **`src/config.rs`**: Configuration management with TOML serialization and validation
 - **`src/error.rs`**: Custom error types with user-friendly messages and error chains
 
-### Communication Modules  
+### Communication Modules 
 - **`src/protocol.rs`**: Message types and protocol definitions with serialization
 - **`src/peer.rs`**: Peer management and connection tracking with thread-safe operations
 - **`src/reliability.rs`**: Message reliability with acknowledgments and retry mechanisms
@@ -514,10 +514,10 @@ cargo test concurrent -- --nocapture
 cargo build --release --features=profiling
 
 # Memory profiling (Linux)
-valgrind --tool=massif ./target/release/rust-p2p-chat
+valgrind --tool=massif./target/release/rust-p2p-chat
 
-# Performance profiling (Linux)  
-perf record --call-graph=dwarf ./target/release/rust-p2p-chat
+# Performance profiling (Linux) 
+perf record --call-graph=dwarf./target/release/rust-p2p-chat
 perf report
 ```
 
@@ -528,20 +528,20 @@ perf report
 ```rust
 // RSA + AES-256-GCM hybrid encryption
 impl E2EEncryption {
-    // Generate fresh RSA keypair
-    pub fn generate_keypair(&mut self) -> Result<()>;
-    
-    // Exchange keys with peer
-    pub fn set_peer_public_key(&mut self, key: &str) -> Result<()>;
-    
-    // Encrypt message with AES-256-GCM
-    pub fn encrypt_message(&self, plaintext: &str) -> Result<String>;
-    
-    // Decrypt and verify message
-    pub fn decrypt_message(&self, encrypted: &str) -> Result<String>;
-    
-    // Check if encryption is ready
-    pub fn is_ready(&self) -> bool;
+// Generate fresh RSA keypair
+pub fn generate_keypair(&mut self) -> Result<()>;
+
+// Exchange keys with peer
+pub fn set_peer_public_key(&mut self, key: &str) -> Result<()>;
+
+// Encrypt message with AES-256-GCM
+pub fn encrypt_message(&self, plaintext: &str) -> Result<String>;
+
+// Decrypt and verify message
+pub fn decrypt_message(&self, encrypted: &str) -> Result<String>;
+
+// Check if encryption is ready
+pub fn is_ready(&self) -> bool;
 }
 ```
 
@@ -567,7 +567,7 @@ pub fn open_file(path: &Path) -> Result<()>;
 # Windows cross-compilation
 cargo build --target x86_64-pc-windows-gnu
 
-# macOS universal binary  
+# macOS universal binary 
 ./build-macos.sh
 
 # Linux static binary
@@ -579,7 +579,7 @@ cargo build --target x86_64-unknown-linux-musl
 ```dockerfile
 FROM rust:alpine as builder
 WORKDIR /app
-COPY . .
+COPY..
 RUN cargo build --release
 
 FROM alpine:latest

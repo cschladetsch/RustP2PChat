@@ -55,9 +55,9 @@ Available commands during chat:
 - **Progress Tracking**: Real-time transfer progress
 - **Auto-save**: Files saved to system Downloads folder or current directory
 - **Auto-open Media**: Automatically open received media files (images, videos, audio, PDFs)
-  - Can be toggled with `/autoopen` command
-  - Platform-specific: Uses `open` on macOS, `start` on Windows, `xdg-open` on Linux
-  - Supported formats: jpg, jpeg, png, gif, bmp, webp, svg, mp4, avi, mov, wmv, mp3, wav, flac, aac, pdf, doc, docx, txt
+- Can be toggled with `/autoopen` command
+- Platform-specific: Uses `open` on macOS, `start` on Windows, `xdg-open` on Linux
+- Supported formats: jpg, jpeg, png, gif, bmp, webp, svg, mp4, avi, mov, wmv, mp3, wav, flac, aac, pdf, doc, docx, txt
 
 ### Configuration System
 
@@ -78,9 +78,9 @@ enable_encryption = true
 log_level = "info"
 save_history = true
 max_file_size_mb = 100
-download_dir = "/path/to/downloads"  # Optional, defaults to system Downloads folder
-auto_open_media = true               # Automatically open received media files
-media_extensions = ["jpg", "png", "mp4", "pdf"]  # File types to auto-open
+download_dir = "/path/to/downloads" # Optional, defaults to system Downloads folder
+auto_open_media = true        # Automatically open received media files
+media_extensions = ["jpg", "png", "mp4", "pdf"] # File types to auto-open
 ```
 
 ### Graphical User Interface (GUI)
@@ -111,7 +111,7 @@ The application now features military-grade end-to-end encryption:
 - **AES-256-GCM Encryption**: Military-grade symmetric encryption for messages
 - **Automatic Key Generation**: New encryption keys for every session
 - **Message Authentication**: Built-in integrity verification with GCM
-- **Visual Indicators**: 🔒 icon shows when messages are encrypted
+- **Visual Indicators**: Icon shows when messages are encrypted
 - **Transparent Operation**: Encryption is automatic and requires no user configuration
 
 ### Command-Line Interface
@@ -167,20 +167,20 @@ Configurable logging levels:
 The application uses a hybrid encryption approach combining asymmetric and symmetric cryptography:
 
 1. **Key Exchange Phase**:
-   - Each peer generates a 1024-bit RSA keypair on startup
-   - Public keys are exchanged automatically on connection
-   - Keys are encoded in base64 for transmission
+- Each peer generates a 1024-bit RSA keypair on startup
+- Public keys are exchanged automatically on connection
+- Keys are encoded in base64 for transmission
 
 2. **Message Encryption**:
-   - AES-256-GCM is used for message content
-   - Each session generates a unique AES key
-   - GCM mode provides authenticated encryption
+- AES-256-GCM is used for message content
+- Each session generates a unique AES key
+- GCM mode provides authenticated encryption
 
 3. **Security Features**:
-   - Perfect Forward Secrecy: New keys for each session
-   - Message Authentication: GCM prevents tampering
-   - Visual Indicators: 🔒 shows encryption status
-   - Automatic Fallback: Works with non-encrypted peers
+- Perfect Forward Secrecy: New keys for each session
+- Message Authentication: GCM prevents tampering
+- Visual Indicators: shows encryption status
+- Automatic Fallback: Works with non-encrypted peers
 
 ### Security Considerations
 
@@ -217,7 +217,7 @@ The application includes a complete macOS installer system:
 rustup target add x86_64-apple-darwin
 rustup target add aarch64-apple-darwin
 
-# Configure linkers in .cargo/config.toml
+# Configure linkers in.cargo/config.toml
 [target.x86_64-apple-darwin]
 linker = "x86_64-apple-darwin14-clang"
 
@@ -264,37 +264,37 @@ The application uses a binary protocol with the following message types:
 
 ```rust
 enum MessageType {
-    Text(String),              // Plain text message
-    EncryptedText(String),     // Base64 encoded encrypted text
-    File(FileInfo),            // File transfer with metadata
-    Command(Command),          // User commands
-    Status(StatusUpdate),      // Connection status updates
-    Heartbeat,                 // Keep-alive ping
-    Acknowledgment(u64),       // Message delivery confirmation
-    Encryption(EncryptionMessage), // Key exchange messages
+Text(String),       // Plain text message
+EncryptedText(String),   // Base64 encoded encrypted text
+File(FileInfo),      // File transfer with metadata
+Command(Command),     // User commands
+Status(StatusUpdate),   // Connection status updates
+Heartbeat,         // Keep-alive ping
+Acknowledgment(u64),    // Message delivery confirmation
+Encryption(EncryptionMessage), // Key exchange messages
 }
 ```
 
 ### Protocol Flow
 
 1. **Connection Establishment**:
-   ```
-   Peer A                    Peer B
-   |------ TCP Connect ----->|
-   |<--- TCP Accept ---------|
-   |<--- PublicKey --------->|
-   |<--- Encryption Ready -->|
-   ```
+```
+Peer A          Peer B
+|------ TCP Connect ----->|
+|<--- TCP Accept ---------|
+|<--- PublicKey --------->|
+|<--- Encryption Ready -->|
+```
 
 2. **Message Exchange**:
-   ```
-   Serialize → Encrypt (optional) → Send → Receive → Decrypt → Deserialize
-   ```
+```
+Serialize → Encrypt (optional) → Send → Receive → Decrypt → Deserialize
+```
 
 3. **File Transfer**:
-   ```
-   Command → Read File → Create FileInfo → Send → Receive → Verify Hash → Save → Auto-open
-   ```
+```
+Command → Read File → Create FileInfo → Send → Receive → Verify Hash → Save → Auto-open
+```
 
 ### Wire Format
 
@@ -321,16 +321,16 @@ The application is structured with clear separation of concerns:
 
 ```
 src/
-├── main.rs              # CLI interface and entry point
-├── lib.rs               # Core P2P chat implementation
-├── protocol.rs          # Message types and serialization
-├── config.rs            # Configuration management
-├── file_transfer.rs     # File operations and auto-open
-├── commands.rs          # Command parsing and handling
-├── encryption.rs        # End-to-end encryption
-├── peer.rs              # Peer management
-├── error.rs             # Custom error types
-└── colors.rs            # ANSI color codes
+├── main.rs       # CLI interface and entry point
+├── lib.rs        # Core P2P chat implementation
+├── protocol.rs     # Message types and serialization
+├── config.rs      # Configuration management
+├── file_transfer.rs   # File operations and auto-open
+├── commands.rs     # Command parsing and handling
+├── encryption.rs    # End-to-end encryption
+├── peer.rs       # Peer management
+├── error.rs       # Custom error types
+└── colors.rs      # ANSI color codes
 ```
 
 ### Core Components
@@ -349,9 +349,9 @@ The application uses Tokio's async runtime with the following task structure:
 ```
 Main Thread
 ├── Connection Handler
-│   ├── Read Task (incoming messages)
-│   ├── Write Task (outgoing messages)
-│   └── Input Task (user input)
+│  ├── Read Task (incoming messages)
+│  ├── Write Task (outgoing messages)
+│  └── Input Task (user input)
 └── Encryption Handler (key exchange)
 ```
 
@@ -378,29 +378,29 @@ Main Thread
 
 **Terminal 1 (First Peer):**
 ```bash
-$ ./rust-p2p-chat --port 8080 --nickname Alice
+$./rust-p2p-chat --port 8080 --nickname Alice
 Listening on: 0.0.0.0:8080
-Waiting for peer to connect...
-✓ Peer connected from: 127.0.0.1:51234
+Waiting for peer to connect..
+Peer connected from: 127.0.0.1:51234
 Type messages and press Enter to send (Ctrl+C to exit)
 Type /help for available commands
-You: Hello Bob!
-Peer: Hi Alice! How are you?
+You: Hello Bob.
+Peer: Hi Alice. How are you?
 You: /send document.pdf
-✓ File sent
+File sent
 ```
 
 **Terminal 2 (Second Peer):**
 ```bash
-$ ./rust-p2p-chat --connect 127.0.0.1:8080 --nickname Bob
+$./rust-p2p-chat --connect 127.0.0.1:8080 --nickname Bob
 Attempting to connect to peer at: 127.0.0.1:8080
-✓ Connected to peer at: 127.0.0.1:8080
+Connected to peer at: 127.0.0.1:8080
 Type messages and press Enter to send (Ctrl+C to exit)
 Type /help for available commands
-Peer: Hello Bob!
-You: Hi Alice! How are you?
-📁 Receiving file: document.pdf (1048576 bytes)
-✓ File saved to downloads/document.pdf
+Peer: Hello Bob.
+You: Hi Alice. How are you?
+Receiving file: document.pdf (1048576 bytes)
+File saved to downloads/document.pdf
 ```
 
 ### Advanced Usage
@@ -461,10 +461,10 @@ The codebase is prepared for:
 
 #### Port Already in Use
 ```
-Error: Port 8080 is already in use!
+Error: Port 8080 is already in use.
 ```
 **Solutions:**
-- Find the process: `lsof -i :8080` (Linux/macOS) or `netstat -an | findstr :8080` (Windows)
+- Find the process: `lsof -i:8080` (Linux/macOS) or `netstat -an | findstr:8080` (Windows)
 - Use a different port: `--port 8081`
 - Kill the process using the port
 
@@ -512,8 +512,8 @@ telnet <peer-ip> <port>
 netstat -tuln | grep <port>
 
 # Firewall status
-sudo ufw status  # Ubuntu
-sudo firewall-cmd --list-all  # CentOS/RHEL
+sudo ufw status # Ubuntu
+sudo firewall-cmd --list-all # CentOS/RHEL
 ```
 
 ## Development Guide
@@ -547,9 +547,9 @@ The project includes comprehensive test coverage:
 cargo test
 
 # Run specific test modules
-cargo test --lib                           # Library tests only
-cargo test --test integration_tests        # Integration tests
-cargo test encryption                      # Encryption-related tests
+cargo test --lib              # Library tests only
+cargo test --test integration_tests    # Integration tests
+cargo test encryption           # Encryption-related tests
 
 # Run tests with output
 cargo test -- --nocapture
@@ -563,74 +563,74 @@ RUST_LOG=debug cargo test -- --nocapture
 The project includes a **comprehensive test suite with 183+ individual tests** across 10 major categories, providing extensive validation of all functionality:
 
 1. **File Transfer Tests** (9 tests):
-   - Hash verification and integrity checking
-   - Size limits and large file handling
-   - Unicode filename support
-   - Directory creation and path handling
-   - Empty file edge cases
+- Hash verification and integrity checking
+- Size limits and large file handling
+- Unicode filename support
+- Directory creation and path handling
+- Empty file edge cases
 
 2. **Configuration Tests** (10 tests):
-   - Default value validation
-   - TOML serialization/deserialization
-   - Path resolution and directory handling
-   - Custom configuration scenarios
-   - Validation and error handling
+- Default value validation
+- TOML serialization/deserialization
+- Path resolution and directory handling
+- Custom configuration scenarios
+- Validation and error handling
 
 3. **Protocol Tests** (14 tests):
-   - Message serialization for all types
-   - Large data handling (1MB+ messages)
-   - Unicode content support
-   - Binary protocol compatibility
-   - Edge case message handling
+- Message serialization for all types
+- Large data handling (1MB+ messages)
+- Unicode content support
+- Binary protocol compatibility
+- Edge case message handling
 
 4. **Command Tests** (20 tests):
-   - Command parsing with aliases
-   - Parameter handling and validation
-   - Error scenarios and edge cases
-   - Help text generation
-   - Command execution workflows
+- Command parsing with aliases
+- Parameter handling and validation
+- Error scenarios and edge cases
+- Help text generation
+- Command execution workflows
 
 5. **Error Handling Tests** (34 tests):
-   - All ChatError variant coverage
-   - User-friendly error messages
-   - Error source chain validation
-   - Error display formatting
-   - Edge case error scenarios
+- All ChatError variant coverage
+- User-friendly error messages
+- Error source chain validation
+- Error display formatting
+- Edge case error scenarios
 
 6. **Reliability Tests** (15 tests):
-   - Message acknowledgment systems
-   - Retry mechanisms and timeouts
-   - Network failure simulation
-   - Message ordering guarantees
-   - Delivery confirmation
+- Message acknowledgment systems
+- Retry mechanisms and timeouts
+- Network failure simulation
+- Message ordering guarantees
+- Delivery confirmation
 
 7. **Concurrent Tests** (7 tests):
-   - Stress testing with 20+ connections
-   - Race condition prevention
-   - Graceful shutdown handling
-   - Resource cleanup verification
-   - Performance under load
+- Stress testing with 20+ connections
+- Race condition prevention
+- Graceful shutdown handling
+- Resource cleanup verification
+- Performance under load
 
 8. **Peer Management Tests** (15 tests):
-   - Concurrent peer access
-   - IPv6 address support
-   - Special character handling
-   - Connection lifecycle management
-   - Peer metadata tracking
+- Concurrent peer access
+- IPv6 address support
+- Special character handling
+- Connection lifecycle management
+- Peer metadata tracking
 
 9. **Encryption Tests** (39 tests):
-   - End-to-end encryption workflows
-   - RSA key exchange protocols
-   - AES-256-GCM encryption/decryption
-   - Key validation and verification
-   - Security edge cases
+- End-to-end encryption workflows
+- RSA key exchange protocols
+- AES-256-GCM encryption/decryption
+- Key validation and verification
+- Security edge cases
 
 10. **Integration Tests** (20 tests):
-    - Real-world usage scenarios
-    - File transfer workflows
-    - Configuration persistence
-    - Network simulation
-    - System integration testing
+- Real-world usage scenarios
+- File transfer workflows
+- Configuration persistence
+- Network simulation
+- System integration testing
 
 **Legacy Tests**:
 - **Unit Tests** (3): Core library functionality
@@ -682,10 +682,10 @@ The project includes comprehensive documentation at multiple levels:
 
 #### **Project Documentation**
 - **`README.md`**: Main project documentation with quick start and examples
-- **`FEATURES.md`**: Comprehensive technical feature documentation
-- **`API.md`**: Developer API reference and integration guide
-- **`DOCUMENTATION.md`**: Documentation overview and structure guide
-- **`CHANGELOG.md`**: Version history and release notes
+- **`Features.md`**: Comprehensive technical feature documentation
+- **`Api.md`**: Developer API reference and integration guide
+- **`Documentation.md`**: Documentation overview and structure guide
+- **`ChangeLog.md`**: Version history and release notes
 - **`macos-installer.md`**: macOS installer creation and deployment guide
 
 #### **Generated Documentation**
@@ -726,9 +726,9 @@ cargo doc --open
 cargo build --release --features=profiling
 
 # Run with perf (Linux)
-perf record --call-graph=dwarf ./target/release/rust-p2p-chat
+perf record --call-graph=dwarf./target/release/rust-p2p-chat
 perf report
 
 # Memory profiling with valgrind
-valgrind --tool=massif ./target/release/rust-p2p-chat
+valgrind --tool=massif./target/release/rust-p2p-chat
 ```

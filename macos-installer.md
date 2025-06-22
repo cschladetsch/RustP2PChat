@@ -11,14 +11,14 @@ This directory contains the necessary files to build a macOS installer for the R
 To build the macOS installer from a non-macOS system, you'll need:
 
 1. **Rust with macOS targets:**
-   ```bash
-   rustup target add x86_64-apple-darwin
-   rustup target add aarch64-apple-darwin
-   ```
+```bash
+rustup target add x86_64-apple-darwin
+rustup target add aarch64-apple-darwin
+```
 
 2. **macOS cross-compilation toolchain:**
-   - Install `osxcross` for cross-compilation
-   - Or use a macOS system for native compilation
+- Install `osxcross` for cross-compilation
+- Or use a macOS system for native compilation
 
 ## Building the Installer
 
@@ -49,10 +49,10 @@ Users can install by:
 ```
 RustP2PChat.app/
 ├── Contents/
-│   ├── Info.plist          # App metadata
-│   ├── MacOS/
-│   │   └── RustP2PChat     # Main executable
-│   └── Resources/          # App resources (icons, etc.)
+│  ├── Info.plist     # App metadata
+│  ├── MacOS/
+│  │  └── RustP2PChat   # Main executable
+│  └── Resources/     # App resources (icons, etc.)
 ```
 
 ## Code Signing (Optional)

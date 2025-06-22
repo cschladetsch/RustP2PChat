@@ -2,7 +2,7 @@
 
 This directory contains a comprehensive test suite with **183+ individual tests** covering all aspects of the Rust P2P Chat application. The tests are organized into 10 major categories, ensuring robust validation of functionality, edge cases, and real-world scenarios.
 
-## 📊 Test Overview
+## Test Overview
 
 ### Test Categories Summary
 
@@ -21,7 +21,7 @@ This directory contains a comprehensive test suite with **183+ individual tests*
 
 **Total: 183 tests** (including legacy tests)
 
-## 🧪 Test Categories
+## Test Categories
 
 ### 1. File Transfer Tests (`file_transfer_tests.rs`)
 
@@ -36,9 +36,9 @@ This directory contains a comprehensive test suite with **183+ individual tests*
 
 **Notable Tests**:
 ```rust
-test_file_transfer_hash_verification()    // Ensures file integrity
-test_file_transfer_unicode_filename()     // Tests "测试文件.txt"
-test_file_transfer_size_limit_exceeded()  // Validates size constraints
+test_file_transfer_hash_verification()  // Ensures file integrity
+test_file_transfer_unicode_filename()   // Tests "测试文件.txt"
+test_file_transfer_size_limit_exceeded() // Validates size constraints
 ```
 
 ### 2. Configuration Tests (`config_tests.rs`)
@@ -54,9 +54,9 @@ test_file_transfer_size_limit_exceeded()  // Validates size constraints
 
 **Notable Tests**:
 ```rust
-test_config_default_values()         // Validates default configuration
-test_config_save_and_load()         // Tests TOML persistence
-test_config_edge_cases()            // Extreme value handling
+test_config_default_values()     // Validates default configuration
+test_config_save_and_load()     // Tests TOML persistence
+test_config_edge_cases()      // Extreme value handling
 ```
 
 ### 3. Protocol Tests (`protocol_tests.rs`)
@@ -72,9 +72,9 @@ test_config_edge_cases()            // Extreme value handling
 
 **Notable Tests**:
 ```rust
-test_message_serialization_all_types()   // Tests all MessageType variants
-test_large_message_serialization()       // 1MB message handling
-test_message_id_uniqueness()            // ID collision prevention
+test_message_serialization_all_types()  // Tests all MessageType variants
+test_large_message_serialization()    // 1MB message handling
+test_message_id_uniqueness()      // ID collision prevention
 ```
 
 ### 4. Command Tests (`command_tests.rs`)
@@ -90,9 +90,9 @@ test_message_id_uniqueness()            // ID collision prevention
 
 **Notable Tests**:
 ```rust
-test_command_parsing_with_spaces()       // "/nick John Doe Jr."
-test_command_handler_execution()         // Async command processing
-test_invalid_command_handling()          // Error case validation
+test_command_parsing_with_spaces()    // "/nick John Doe Jr."
+test_command_handler_execution()     // Async command processing
+test_invalid_command_handling()     // Error case validation
 ```
 
 ### 5. Error Handling Tests (`error_handling_tests.rs`)
@@ -108,9 +108,9 @@ test_invalid_command_handling()          // Error case validation
 
 **Notable Tests**:
 ```rust
-test_chat_error_display_io_permission_denied()  // Friendly permission messages
-test_chat_error_source_preservation()           // Error chain testing
-test_all_io_error_kinds()                      // Comprehensive I/O error coverage
+test_chat_error_display_io_permission_denied() // Friendly permission messages
+test_chat_error_source_preservation()      // Error chain testing
+test_all_io_error_kinds()           // Comprehensive I/O error coverage
 ```
 
 ### 6. Reliability Tests (`reliability_tests.rs`)
@@ -126,9 +126,9 @@ test_all_io_error_kinds()                      // Comprehensive I/O error covera
 
 **Notable Tests**:
 ```rust
-test_message_retry_mechanism()          // Automatic retry logic
-test_acknowledgment_processing()        // Delivery confirmation
-test_timeout_handling()                 // Expired message cleanup
+test_message_retry_mechanism()     // Automatic retry logic
+test_acknowledgment_processing()    // Delivery confirmation
+test_timeout_handling()         // Expired message cleanup
 ```
 
 ### 7. Concurrent Tests (`concurrent_tests.rs`)
@@ -144,9 +144,9 @@ test_timeout_handling()                 // Expired message cleanup
 
 **Notable Tests**:
 ```rust
-test_concurrent_connections()           // Multiple simultaneous peers
-test_connection_stress()               // 20+ connection stress test
-test_graceful_shutdown_under_load()    // Clean termination
+test_concurrent_connections()      // Multiple simultaneous peers
+test_connection_stress()        // 20+ connection stress test
+test_graceful_shutdown_under_load()  // Clean termination
 ```
 
 ### 8. Peer Management Tests (`peer_management_tests.rs`)
@@ -162,9 +162,9 @@ test_graceful_shutdown_under_load()    // Clean termination
 
 **Notable Tests**:
 ```rust
-test_peer_info_with_ipv6()             // IPv6 address support
-test_concurrent_peer_access()          // Thread safety
-test_peer_with_special_characters()    // Unicode nickname support
+test_peer_info_with_ipv6()       // IPv6 address support
+test_concurrent_peer_access()     // Thread safety
+test_peer_with_special_characters()  // Unicode nickname support
 ```
 
 ### 9. Encryption Tests (`encryption_tests.rs`)
@@ -181,10 +181,10 @@ test_peer_with_special_characters()    // Unicode nickname support
 
 **Notable Tests**:
 ```rust
-test_full_key_exchange_workflow()      // Complete handshake process
-test_encryption_with_unicode()         // International text encryption
-test_concurrent_crypto_operations()    // Thread-safe encryption
-test_signature_verification()          // Message authentication
+test_full_key_exchange_workflow()   // Complete handshake process
+test_encryption_with_unicode()     // International text encryption
+test_concurrent_crypto_operations()  // Thread-safe encryption
+test_signature_verification()     // Message authentication
 ```
 
 ### 10. Integration Tests (`integration_tests.rs`)
@@ -200,45 +200,45 @@ test_signature_verification()          // Message authentication
 
 **Notable Tests**:
 ```rust
-test_full_chat_session_lifecycle()     // Complete application workflow
-test_file_transfer_integration()       // End-to-end file operations
-test_configuration_persistence()       // Settings persistence
-test_network_simulation()             // TCP communication
+test_full_chat_session_lifecycle()   // Complete application workflow
+test_file_transfer_integration()    // End-to-end file operations
+test_configuration_persistence()    // Settings persistence
+test_network_simulation()       // TCP communication
 ```
 
-## 🏃‍♂️ Running Tests
+## Running Tests
 
 ### All Tests
 ```bash
-cargo test                    # Run all tests
-cargo test --release         # Optimized test execution
-cargo test -- --nocapture    # Show test output
+cargo test          # Run all tests
+cargo test --release     # Optimized test execution
+cargo test -- --nocapture  # Show test output
 ```
 
 ### Specific Categories
 ```bash
-cargo test config_tests      # Configuration tests
-cargo test encryption_tests  # Cryptography tests
+cargo test config_tests   # Configuration tests
+cargo test encryption_tests # Cryptography tests
 cargo test integration_tests # End-to-end scenarios
-cargo test concurrent_tests  # Concurrency validation
+cargo test concurrent_tests # Concurrency validation
 ```
 
 ### Test Filtering
 ```bash
-cargo test test_file_transfer    # All file transfer tests
-cargo test test_unicode          # Unicode-related tests
-cargo test test_error            # Error handling tests
-cargo test test_concurrent       # Concurrency tests
+cargo test test_file_transfer  # All file transfer tests
+cargo test test_unicode     # Unicode-related tests
+cargo test test_error      # Error handling tests
+cargo test test_concurrent    # Concurrency tests
 ```
 
 ### Verbose Output
 ```bash
-cargo test -- --test-threads=1  # Run tests sequentially
-RUST_LOG=debug cargo test       # Enable debug logging
+cargo test -- --test-threads=1 # Run tests sequentially
+RUST_LOG=debug cargo test    # Enable debug logging
 cargo test -- --exact test_name # Run specific test
 ```
 
-## 🎯 Test Features
+## Test Features
 
 ### Comprehensive Edge Cases
 - **Unicode Support**: Chinese characters, emojis, accented text
@@ -260,38 +260,38 @@ cargo test -- --exact test_name # Run specific test
 - **Resource Exhaustion**: Large files, many connections
 - **Input Sanitization**: Special characters, malformed data
 
-## 📋 Test Guidelines
+## Test Guidelines
 
 ### Writing New Tests
 
 1. **Follow Naming Conventions**:
-   ```rust
-   #[test]
-   fn test_feature_specific_behavior() { }
-   
-   #[tokio::test]
-   async fn test_async_feature_behavior() { }
-   ```
+```rust
+#[test]
+fn test_feature_specific_behavior() { }
+
+#[tokio::test]
+async fn test_async_feature_behavior() { }
+```
 
 2. **Use Appropriate Test Attributes**:
-   - `#[test]` for synchronous tests
-   - `#[tokio::test]` for async tests
-   - `#[should_panic]` for expected failures
+- `#[test]` for synchronous tests
+- `#[tokio::test]` for async tests
+- `#[should_panic]` for expected failures
 
 3. **Clean Resource Management**:
-   ```rust
-   use tempfile::tempdir;
-   
-   let temp_dir = tempdir().unwrap();
-   // temp_dir automatically cleaned up when dropped
-   ```
+```rust
+use tempfile::tempdir;
+
+let temp_dir = tempdir().unwrap();
+// temp_dir automatically cleaned up when dropped
+```
 
 4. **Comprehensive Assertions**:
-   ```rust
-   assert_eq!(actual, expected);
-   assert!(condition, "helpful error message");
-   assert_matches!(result, Ok(value) if value > 0);
-   ```
+```rust
+assert_eq!(actual, expected);
+assert!(condition, "helpful error message");
+assert_matches!(result, Ok(value) if value > 0);
+```
 
 ### Test Organization
 
@@ -313,7 +313,7 @@ let temp_file = NamedTempFile::new().unwrap();
 let (tx, rx) = tokio::sync::mpsc::channel(10);
 ```
 
-## 🔧 Test Infrastructure
+## Test Infrastructure
 
 ### Dependencies
 - **tokio**: Async runtime for async tests
@@ -333,14 +333,14 @@ let (tx, rx) = tokio::sync::mpsc::channel(10);
 - Performance regression detection
 - Security vulnerability scanning
 
-## 📈 Test Metrics
+## Test Metrics
 
 ### Coverage Areas
-- ✅ **Core Functionality**: 100% of main features tested
-- ✅ **Edge Cases**: Unicode, large data, concurrent operations
-- ✅ **Error Handling**: All error types with friendly messages
-- ✅ **Security**: Comprehensive cryptographic testing
-- ✅ **Performance**: Stress testing and timeout handling
+- **Core Functionality**: 100% of main features tested
+- **Edge Cases**: Unicode, large data, concurrent operations
+- **Error Handling**: All error types with friendly messages
+- **Security**: Comprehensive cryptographic testing
+- **Performance**: Stress testing and timeout handling
 
 ### Quality Metrics
 - **Test Count**: 183 tests across 10 categories
@@ -349,7 +349,7 @@ let (tx, rx) = tokio::sync::mpsc::channel(10);
 - **Performance**: Sub-second test execution
 - **Reliability**: Consistent test results across platforms
 
-## 🚀 Future Test Enhancements
+## Future Test Enhancements
 
 ### Planned Additions
 - **Property-based Testing**: Fuzzing with `proptest`

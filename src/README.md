@@ -2,7 +2,7 @@
 
 This directory contains the core implementation of the Rust P2P Chat application. The codebase is organized into modular components that handle different aspects of peer-to-peer communication.
 
-## 📁 Module Overview
+## Module Overview
 
 ### Core Modules
 
@@ -26,7 +26,7 @@ This directory contains the core implementation of the Rust P2P Chat application
 |--------|---------|-------------|
 | **`bin/test_chat.rs`** | Encryption testing | Standalone encryption verification program |
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Design Principles
 
@@ -40,7 +40,7 @@ This directory contains the core implementation of the Rust P2P Chat application
 
 ```
 User Input → Commands → Protocol → Encryption → Network → Peer
-     ↑                                                        ↓
+↑                            ↓
 Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 ```
 
@@ -51,127 +51,127 @@ Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 3. **Communication**: Message sending/receiving, file transfers
 4. **Cleanup**: Graceful disconnection, resource cleanup
 
-## 📋 Module Details
+## Module Details
 
 ### `main.rs` - Application Entry Point
 - **Purpose**: CLI interface and application lifecycle management
 - **Key Functions**:
-  - Command-line argument parsing with `clap`
-  - User interaction for connection setup
-  - Main application event loop
-  - Signal handling for graceful shutdown
+- Command-line argument parsing with `clap`
+- User interaction for connection setup
+- Main application event loop
+- Signal handling for graceful shutdown
 - **Dependencies**: `lib.rs`, `config.rs`, `colors.rs`
 
 ### `lib.rs` - Core P2P Implementation
 - **Purpose**: Core peer-to-peer communication logic
 - **Key Functions**:
-  - `P2PChat` struct - main application state
-  - Connection establishment (both server and client modes)
-  - Async message handling loops
-  - Peer connection management
+- `P2PChat` struct - main application state
+- Connection establishment (both server and client modes)
+- Async message handling loops
+- Peer connection management
 - **Architecture**: Event-driven async design with separate read/write tasks
 
 ### `protocol.rs` - Message Protocol
 - **Purpose**: Define message types and serialization format
 - **Message Types**:
-  - `Text` - Plain text messages
-  - `EncryptedText` - Encrypted text messages
-  - `File` - File transfer messages
-  - `Command` - Chat commands
-  - `Status` - Status updates
-  - `Heartbeat` - Keep-alive messages
-  - `Acknowledgment` - Message confirmations
-  - `Encryption` - Key exchange messages
+- `Text` - Plain text messages
+- `EncryptedText` - Encrypted text messages
+- `File` - File transfer messages
+- `Command` - Chat commands
+- `Status` - Status updates
+- `Heartbeat` - Keep-alive messages
+- `Acknowledgment` - Message confirmations
+- `Encryption` - Key exchange messages
 - **Serialization**: Uses `bincode` for efficient binary encoding
 
 ### `peer.rs` - Peer Management
 - **Purpose**: Manage peer connections and information
 - **Key Components**:
-  - `PeerInfo` - Peer metadata (ID, nickname, address, connection time)
-  - `Peer` - Active peer connection with stream and channels
-  - `PeerManager` - Manages multiple peer connections
+- `PeerInfo` - Peer metadata (ID, nickname, address, connection time)
+- `Peer` - Active peer connection with stream and channels
+- `PeerManager` - Manages multiple peer connections
 - **Features**: Concurrent access, IPv6 support, connection tracking
 
 ### `encryption.rs` - End-to-End Encryption
 - **Purpose**: Provide secure communication between peers
 - **Encryption Stack**:
-  - **RSA-1024**: Public key cryptography for key exchange
-  - **AES-256-GCM**: Symmetric encryption for messages
-  - **Digital Signatures**: Message authentication with RSA-PKCS1v15
+- **RSA-1024**: Public key cryptography for key exchange
+- **AES-256-GCM**: Symmetric encryption for messages
+- **Digital Signatures**: Message authentication with RSA-PKCS1v15
 - **Key Features**:
-  - Automatic key generation and exchange
-  - Perfect forward secrecy (new keys per session)
-  - Message integrity verification
-  - TLS transport layer security
+- Automatic key generation and exchange
+- Perfect forward secrecy (new keys per session)
+- Message integrity verification
+- TLS transport layer security
 
 ### `config.rs` - Configuration Management
 - **Purpose**: Application configuration and settings
 - **Configuration Options**:
-  - User preferences (nickname, default port)
-  - Network settings (buffer size, timeouts)
-  - Security settings (encryption enabled)
-  - File transfer settings (max size, auto-open)
-  - Logging configuration
+- User preferences (nickname, default port)
+- Network settings (buffer size, timeouts)
+- Security settings (encryption enabled)
+- File transfer settings (max size, auto-open)
+- Logging configuration
 - **File Format**: TOML with platform-specific paths
 
 ### `error.rs` - Error Handling
 - **Purpose**: Centralized error management with user-friendly messages
 - **Error Types**:
-  - `Io` - I/O and network errors
-  - `Connection` - Connection-specific errors
-  - `Protocol` - Protocol parsing errors
-  - `InvalidMessage` - Message validation errors
-  - `PeerDisconnected` - Peer disconnection
-  - `BindFailed` - Port binding failures
-  - `ConnectFailed` - Connection failures
-  - `Encryption` - Encryption/decryption errors
-  - `FileTransfer` - File operation errors
-  - `Configuration` - Config file errors
+- `Io` - I/O and network errors
+- `Connection` - Connection-specific errors
+- `Protocol` - Protocol parsing errors
+- `InvalidMessage` - Message validation errors
+- `PeerDisconnected` - Peer disconnection
+- `BindFailed` - Port binding failures
+- `ConnectFailed` - Connection failures
+- `Encryption` - Encryption/decryption errors
+- `FileTransfer` - File operation errors
+- `Configuration` - Config file errors
 
 ### `commands.rs` - Command System
 - **Purpose**: Handle chat commands and system operations
 - **Commands Supported**:
-  - `/help` - Show available commands
-  - `/quit` - Exit the application
-  - `/send <file>` - Send a file
-  - `/nick <name>` - Set nickname
-  - `/info` - Show connection info
-  - `/autoopen` - Toggle media auto-open
-  - `/peers` - List connected peers
-  - `/stats` - Show reliability statistics
+- `/help` - Show available commands
+- `/quit` - Exit the application
+- `/send <file>` - Send a file
+- `/nick <name>` - Set nickname
+- `/info` - Show connection info
+- `/autoopen` - Toggle media auto-open
+- `/peers` - List connected peers
+- `/stats` - Show reliability statistics
 - **Architecture**: Command parsing with async handler dispatch
 
 ### `file_transfer.rs` - File Operations
 - **Purpose**: Handle file sending and receiving with verification
 - **Key Features**:
-  - File preparation with metadata
-  - SHA-256 hash verification
-  - Progress tracking
-  - Size limit enforcement
-  - Unicode filename support
-  - Automatic directory creation
+- File preparation with metadata
+- SHA-256 hash verification
+- Progress tracking
+- Size limit enforcement
+- Unicode filename support
+- Automatic directory creation
 - **Workflow**: Prepare → Send → Verify → Save
 
 ### `reliability.rs` - Message Reliability
 - **Purpose**: Ensure message delivery with acknowledgments and retries
 - **Features**:
-  - Message acknowledgment system
-  - Automatic retry with exponential backoff
-  - Timeout handling
-  - Delivery statistics
-  - Old message cleanup
+- Message acknowledgment system
+- Automatic retry with exponential backoff
+- Timeout handling
+- Delivery statistics
+- Old message cleanup
 - **Configuration**: Retry attempts, delays, timeouts
 
 ### `colors.rs` - Terminal Colors
 - **Purpose**: ANSI color codes for enhanced terminal output
 - **Color Support**:
-  - User messages (green)
-  - Peer messages (cyan)
-  - System messages (yellow)
-  - Error messages (red)
-  - Encryption indicators (lock icon)
+- User messages (green)
+- Peer messages (cyan)
+- System messages (yellow)
+- Error messages (red)
+- Encryption indicators (lock icon)
 
-## 🔧 Development Guidelines
+## Development Guidelines
 
 ### Code Style
 - Follow Rust standard conventions
@@ -203,7 +203,7 @@ Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 - Use secure random number generation
 - Follow cryptographic best practices
 
-## 🚀 Adding New Features
+## Adding New Features
 
 ### Adding a New Message Type
 1. Add variant to `MessageType` enum in `protocol.rs`
@@ -224,7 +224,7 @@ Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 3. Add validation if needed
 4. Update documentation and examples
 
-## 📈 Performance Considerations
+## Performance Considerations
 
 ### Memory Usage
 - Use `Arc` for shared data structures
@@ -244,7 +244,7 @@ Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 - Cache computed values
 - Use parallel processing where appropriate
 
-## 🔍 Debugging
+## Debugging
 
 ### Logging
 - Use `tracing` for structured logging
@@ -264,7 +264,7 @@ Terminal ← Colors ← Error ← File Transfer ← Reliability ← Decryption
 - `cargo clippy` - Linting
 - `RUST_LOG=debug cargo run` - Enable debug logging
 
-## 📚 Further Reading
+## Further Reading
 
 - [Tokio Documentation](https://tokio.rs/)
 - [Rust Async Programming](https://rust-lang.github.io/async-book/)

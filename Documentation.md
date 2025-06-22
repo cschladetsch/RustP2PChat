@@ -4,49 +4,49 @@ This document provides an overview of all documentation available for the Rust P
 
 ## Documentation Files
 
-### 📖 Core Documentation
+### Core Documentation
 
 1. **[README.md](Readme.md)** - Main project documentation
-   - Quick start guide
-   - Installation instructions
-   - macOS DMG installer guide
-   - Usage examples
-   - Platform-specific build instructions
-   - Configuration options
-   - Security information
+- Quick start guide
+- Installation instructions
+- macOS DMG installer guide
+- Usage examples
+- Platform-specific build instructions
+- Configuration options
+- Security information
 
-2. **[FEATURES.md](FEATURES.md)** - Comprehensive feature documentation
-   - Technical implementation details
-   - Network protocol specification
-   - Architecture overview
-   - Performance considerations
-   - Troubleshooting guide
-   - Development guidelines
+2. **[Features.md](Features.md)** - Comprehensive feature documentation
+- Technical implementation details
+- Network protocol specification
+- Architecture overview
+- Performance considerations
+- Troubleshooting guide
+- Development guidelines
 
-3. **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
-   - Release notes
-   - New features
-   - Bug fixes
-   - Breaking changes
+3. **[ChangeLog.md](ChangeLog.md)** - Version history and changes
+- Release notes
+- New features
+- Bug fixes
+- Breaking changes
 
-4. **[API.md](API.md)** - Developer API documentation
-   - Core types and interfaces
-   - Network protocol details
-   - Extension points
-   - Examples and usage patterns
+4. **[Api.md](Api.md)** - Developer API documentation
+- Core types and interfaces
+- Network protocol details
+- Extension points
+- Examples and usage patterns
 
-### 📝 Generated Documentation
+### Generated Documentation
 
 5. **Rust Documentation** - Generated from source code comments
-   - Generate with: `cargo doc --open`
-   - Available at: `target/doc/rust_p2p_chat/index.html`
-   - Includes all public APIs with examples
+- Generate with: `cargo doc --open`
+- Available at: `target/doc/rust_p2p_chat/index.html`
+- Includes all public APIs with examples
 
 6. **[macos-installer.md](macos-installer.md)** - macOS installer documentation
-   - DMG creation process
-   - Universal binary compilation
-   - Cross-platform build setup
-   - App bundle structure
+- DMG creation process
+- Universal binary compilation
+- Cross-platform build setup
+- App bundle structure
 
 ## Documentation Structure
 
@@ -58,41 +58,41 @@ This document provides an overview of all documentation available for the Rust P
 - **Command reference**: Complete list of chat commands
 
 ### Technical Documentation
-- **FEATURES.md**: Deep dive into technical capabilities
+- **Features.md**: Deep dive into technical capabilities
 - **Architecture**: Module structure and design patterns
 - **Protocol**: Network communication specification
 - **Security**: Encryption implementation and best practices
 
 ### Developer Documentation
-- **API.md**: Integration and extension guide
+- **Api.md**: Integration and extension guide
 - **Rust docs**: Generated API documentation
 - **Examples**: Code samples for common use cases
 - **Testing**: How to run and extend tests
 
 ## Key Documentation Sections
 
-### 🚀 Getting Started
+### Getting Started
 1. [Quick Start](Readme.md#-quick-start) - 30-second setup
 2. [Installation](Readme.md#installation) - Build from source
 3. [Platform Instructions](Readme.md#building-from-source) - Windows/macOS/Linux
 
-### 💻 Usage
+### Usage
 1. [Commands](Readme.md#commands) - All available commands
 2. [Configuration](Readme.md#configuration) - Settings and options
 3. [File Transfer](Readme.md#send-a-file) - Sending and receiving files
-4. [Examples](FEATURES.md#usage-examples) - Real usage scenarios
+4. [Examples](Features.md#usage-examples) - Real usage scenarios
 
-### 🔧 Technical
-1. [Architecture](FEATURES.md#architecture) - System design
-2. [Protocol](FEATURES.md#network-protocol) - Communication details
-3. [Security](FEATURES.md#security--encryption) - Encryption implementation
-4. [Performance](FEATURES.md#performance) - Optimization features
+### Technical
+1. [Architecture](Features.md#architecture) - System design
+2. [Protocol](Features.md#network-protocol) - Communication details
+3. [Security](Features.md#security--encryption) - Encryption implementation
+4. [Performance](Features.md#performance) - Optimization features
 
-### 👩‍💻 Development
-1. [API Reference](API.md) - Developer interfaces
-2. [Extension Points](API.md#extension-points) - How to extend
-3. [Testing](FEATURES.md#development-guide) - Running tests
-4. [Contributing](Readme.md#-contributing) - How to contribute
+### Development
+1. [API Reference](Api.md) - Developer interfaces
+2. [Extension Points](Api.md#extension-points) - How to extend
+3. [Testing](Features.md#development-guide) - Running tests
+4. [Contributing](Readme.md#contributing) - How to contribute
 
 ## Documentation Standards
 
@@ -112,14 +112,14 @@ This document provides an overview of all documentation available for the Rust P
 - Consistent table of contents
 - Cross-references between documents
 - Progressive complexity (basic → advanced)
-- Visual indicators (emojis) for navigation
+- Visual indicators for navigation
 
 ## Maintenance
 
 ### Keeping Documentation Current
-1. Update CHANGELOG.md for every release
+1. Update ChangeLog.md for every release
 2. Review README.md for accuracy
-3. Extend API.md for new features
+3. Extend Api.md for new features
 4. Generate fresh Rust docs: `cargo doc`
 
 ### Documentation Testing
@@ -132,16 +132,16 @@ This document provides an overview of all documentation available for the Rust P
 
 ### For New Users
 → Start with [README.md](Readme.md)
-→ Follow [Quick Start](Readme.md#-quick-start)
+→ Follow [Quick Start](Readme.md#quick-start)
 → Check [Commands](Readme.md#commands)
 
 ### For Developers
-→ Read [API.md](API.md)
+→ Read [Api.md](Api.md)
 → Generate docs: `cargo doc --open`
-→ Review [FEATURES.md](FEATURES.md#development-guide)
+→ Review [Features.md](Features.md#development-guide)
 
 ### For Troubleshooting
-→ Check [Troubleshooting](FEATURES.md#troubleshooting)
+→ Check [Troubleshooting](Features.md#troubleshooting)
 → Review [Configuration](Readme.md#configuration)
 → Enable debug mode: `--debug`
 
@@ -161,16 +161,16 @@ This document provides an overview of all documentation available for the Rust P
 
 ## Documentation Completeness
 
-✅ **Inline API Documentation**: All modules, functions, and types  
-✅ **Security Documentation**: Security considerations throughout  
-✅ **Thread Safety Documentation**: Concurrency guarantees documented  
-✅ **Error Handling Documentation**: Complete error type coverage  
-✅ **Code Examples**: All examples tested and functional  
-✅ **Directory READMEs**: Complete coverage of major directories  
-✅ **Project Documentation**: All core documentation files updated  
-✅ **Cross-Platform Coverage**: Platform-specific instructions included  
-✅ **Performance Documentation**: Optimization guidelines and profiling  
-✅ **Test Documentation**: Complete test suite coverage and instructions
+**Inline API Documentation**: All modules, functions, and types 
+**Security Documentation**: Security considerations throughout 
+**Thread Safety Documentation**: Concurrency guarantees documented 
+**Error Handling Documentation**: Complete error type coverage 
+**Code Examples**: All examples tested and functional 
+**Directory READMEs**: Complete coverage of major directories 
+**Project Documentation**: All core documentation files updated 
+**Cross-Platform Coverage**: Platform-specific instructions included 
+**Performance Documentation**: Optimization guidelines and profiling 
+**Test Documentation**: Complete test suite coverage and instructions
 
 ## Contributing to Documentation
 
