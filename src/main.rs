@@ -1,3 +1,5 @@
+#![cfg_attr(windows, windows_subsystem = "windows")]
+
 use clap::{Parser, Subcommand};
 use rust_p2p_chat::{config::Config, P2PChat};
 use std::io;
@@ -41,9 +43,6 @@ enum Commands {
     /// Generate and save default configuration
     Config,
 }
-
-#[cfg(windows)]
-#[windows_subsystem = "windows"] // This prevents console window on Windows when using GUI
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
