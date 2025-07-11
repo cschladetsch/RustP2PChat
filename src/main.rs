@@ -1,4 +1,4 @@
-#![cfg_attr(windows, windows_subsystem = "windows")]
+// #![cfg_attr(windows, windows_subsystem = "windows")] // Commented out to fix argument parsing
 
 use clap::{Parser, Subcommand};
 use rust_p2p_chat::{config::Config, P2PChat};
