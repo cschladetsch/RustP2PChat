@@ -92,11 +92,6 @@ echo "  - Detach:            Ctrl+B then D"
 echo "  - Kill session:       tmux kill-session -t p2p-demo"
 echo
 echo -e "${YELLOW}The peers are now connected and chatting!${NC}"
-echo -e "${YELLOW}Attach to the session to see the live chat and send your own messages.${NC}"
 
-# Optionally attach to the session immediately
-read -p "Do you want to attach to the session now? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    tmux attach -t p2p-demo
-fi
+# Automatically attach to the session
+tmux attach -t p2p-demo
