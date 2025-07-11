@@ -86,25 +86,47 @@ docker-compose up
 
 You are now chatting peer-to-peer with end-to-end encryption.
 
-## Windows Drag & Drop Binary
+## Windows Quick Start (Auto-Connect Demo)
 
-A pre-built Windows executable with full drag & drop support is available:
+### One-Click Setup (Recommended)
 
-### Quick Setup
-1. Build the Windows executable using the instructions below
-2. Run with `--gui` flag for drag & drop support
-3. Drag files directly onto the chat window to send them!
+For Windows users who want to see two peers automatically connect:
 
-### Building for Windows
 ```powershell
-# Build with drag & drop support
-.\build-windows.ps1
-
-# Create installer package
-.\create-windows-installer.ps1
+# Run this single command from PowerShell:
+powershell -ExecutionPolicy Bypass -File \\wsl.localhost\Ubuntu\home\xian\local\RustChat\rust-p2p-chat\WINDOWS-SETUP-SIMPLE.ps1
 ```
 
-See [WINDOWS_DRAGDROP.md](WINDOWS_DRAGDROP.md) for detailed Windows features.
+This single script will:
+1. ✅ Check if Rust is installed (prompts to install if missing)
+2. ✅ Copy project to `C:\RustProjects\rust-p2p-chat`
+3. ✅ Build natively for Windows
+4. ✅ Launch two GUI windows (Alice & Bob) that auto-connect
+5. ✅ Enable drag & drop file sharing between windows
+
+### Manual Two-Window Demo
+
+If you already have the executable built:
+
+```powershell
+# Terminal 1 - Alice
+.\target\release\rust-p2p-chat.exe --gui --port 8080 --nickname Alice
+
+# Terminal 2 - Bob (waits 2 seconds, then runs)
+.\target\release\rust-p2p-chat.exe --gui --port 8081 --connect localhost:8080 --nickname Bob
+```
+
+### Features
+- 🚀 **Drag & Drop**: Drag files directly onto either window
+- 🔒 **Encrypted**: All transfers use AES-256 encryption
+- 👥 **True P2P**: No server needed, direct connection
+- 📁 **Any File Type**: Images, music, documents up to 100MB
+- 🪟 **Windows 11 Optimized**: Native performance and UI
+
+### Detailed Guides
+- [Windows 11 Guide](docs/WINDOWS11-GUIDE.md) - Comprehensive Windows setup
+- [Drag & Drop Guide](WINDOWS_DRAGDROP.md) - Detailed drag & drop features
+- [Build from Source](#windows) - Manual build instructions
 
 ## Features
 
@@ -473,6 +495,26 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 ##### Windows Firewall Note
 - On first run, Windows Firewall may prompt you to allow the application
 - Allow access for both private and public networks if you plan to connect over the internet
+
+##### Windows Troubleshooting
+
+**"Cannot run script" error:**
+```powershell
+# Use bypass execution policy
+powershell -ExecutionPolicy Bypass -File WINDOWS-SETUP-SIMPLE.ps1
+```
+
+**"Rust not found" after installation:**
+- Close and reopen PowerShell
+- Or refresh PATH: `$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")`
+
+**"Address already in use" error:**
+- Use different ports: `--port 9090` for Alice, `--port 9091` for Bob
+- Kill existing instances: `taskkill /F /IM rust-p2p-chat.exe`
+
+**WSL path issues:**
+- Build natively on Windows using `WINDOWS-SETUP-SIMPLE.ps1`
+- Or copy exe to Windows: `cp target/release/rust-p2p-chat.exe /mnt/c/Users/YOUR_USERNAME/Desktop/`
 
 #### Ubuntu/WSL
 
