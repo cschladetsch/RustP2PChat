@@ -51,7 +51,7 @@ Run `shell/test_mux.sh`:
 
 ```bash
 # Clone the repository
-git clone https://github.com/cschladetsch/RustP2PChat.git
+git clone https://github.com/your-username/RustChat.git
 cd rust-p2p-chat
 
 # Build and run
@@ -74,21 +74,13 @@ cargo run --release -- --connect localhost:8080
 
 #### Option 2: Using Docker (No Rust required)
 
-**Terminal 1 (First peer):**
 ```bash
-docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080
-```
-
-**Terminal 2 (Second peer):**
-```bash
-docker run -it --rm ghcr.io/cschladetsch/rust-p2p-chat --connect host.docker.internal:8080
-```
-
-#### Option 3: Docker Compose Demo
-
-```bash
-# Run two peers automatically
+# Quick demo with docker-compose
 docker-compose up
+
+# Or run manually in two terminals:
+# Terminal 1: docker run -it --rm -p 8080:8080 ghcr.io/your-username/rust-p2p-chat --port 8080  
+# Terminal 2: docker run -it --rm ghcr.io/your-username/rust-p2p-chat --connect host.docker.internal:8080
 ```
 
 You are now chatting peer-to-peer with end-to-end encryption.
@@ -272,6 +264,48 @@ Available commands:
 ..
 ```
 
+## Docker Support
+
+### Quick Start with Docker
+
+```bash
+# Using pre-built image (recommended)
+docker run -it --rm -p 8080:8080 ghcr.io/your-username/rust-p2p-chat --port 8080
+
+# Or build your own
+docker build -t rust-p2p-chat .
+docker run -it --rm -p 8080:8080 rust-p2p-chat --port 8080
+```
+
+### Docker Hub Deployment
+
+Deploy your own version to Docker Hub:
+
+```bash
+# Using the deployment script
+./deploy-docker.sh <your-dockerhub-username>
+
+# After deployment, others can use:
+docker run -it --rm <your-dockerhub-username>/rust-p2p-chat
+```
+
+### Docker Compose
+
+```bash
+# Run demo with two peers
+docker-compose up
+
+# Development mode with auto-reload
+docker-compose -f docker-compose.dev.yml up
+```
+
+### Helper Scripts
+
+- **`docker-chat.sh`** - Convenience script for Docker operations
+- **`deploy-docker.sh`** - Deploy to Docker Hub
+
+For detailed Docker documentation, see [shell/docker/README.md](shell/docker/README.md).
+
 ## Configuration
 
 The application supports configuration through a TOML file. Generate a default config:
@@ -336,7 +370,7 @@ winget install Rustlang.Rust
 2. **Clone and build:**
 ```powershell
 # Clone the repository
-git clone https://github.com/cschladetsch/RustP2PChat.git
+git clone https://github.com/your-username/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
@@ -371,7 +405,7 @@ source "$HOME/.cargo/env"
 2. **Clone and build:**
 ```bash
 # Clone the repository
-git clone https://github.com/cschladetsch/RustP2PChat.git
+git clone https://github.com/your-username/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
@@ -403,7 +437,7 @@ source "$HOME/.cargo/env"
 2. **Clone and build:**
 ```bash
 # Clone the repository
-git clone https://github.com/cschladetsch/RustP2PChat.git
+git clone https://github.com/your-username/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
@@ -441,58 +475,6 @@ cargo test
 cargo build --release --features "feature_name"
 ```
 
-### Docker Build
-
-The application can also be built and run using Docker for easy deployment and isolation.
-
-#### Quick Start with Docker
-
-```bash
-# Using the helper script (recommended)
-./docker-chat.sh build           # Build the Docker image
-./docker-chat.sh run --port 8080 --nickname Alice  # Run as listener
-./docker-chat.sh run --connect localhost:8080 --nickname Bob  # Connect to peer
-
-# Or run a demo with two peers
-./docker-chat.sh demo
-
-# Run three peers
-./docker-chat.sh multi
-```
-
-#### Manual Docker Commands
-
-```bash
-# Build the image
-docker build -t rust-p2p-chat .
-
-# Run as listener
-docker run -it --rm -p 8080:8080 rust-p2p-chat --port 8080 --nickname Alice
-
-# Run as connector (in another terminal)
-docker run -it --rm rust-p2p-chat --connect host.docker.internal:8080 --nickname Bob
-```
-
-#### Docker Compose
-
-```bash
-# Run two peers automatically
-docker-compose up
-
-# Run three peers
-docker-compose --profile multi up
-
-# Development mode with auto-reload
-docker-compose -f docker-compose.dev.yml up
-```
-
-#### Docker Features
-
-- **Multi-stage build**: Minimal final image (~50MB)
-- **Non-root user**: Runs as unprivileged user for security
-- **Pre-configured networking**: Peers can find each other by service name
-- **Development mode**: Auto-recompilation on code changes
-- **Easy cleanup**: `./docker-chat.sh clean` removes all containers and images
 
 ### Troubleshooting Build Issues
 
@@ -826,14 +808,14 @@ All encryption tests passed.
 
 ## Recent Updates
 
-### Latest Changes (June 2025)
+### Latest Changes
 - **GUI Support**: Added optional graphical user interface with `--gui` flag
 - **Shell Script Helpers**: Added `./b` for build and `./r` for run
 - **Test Improvements**: Updated integration tests to use idiomatic Rust patterns
 - **Code Quality**: Fixed clippy warnings, improved error handling
 - **Documentation**: Enhanced README with security notices and key highlights
 
-### Recently Implemented Features
+### Features
 - **Custom Error Types**: Replaced generic errors with specific ChatError types
 - **Enhanced Message Protocol**: Support for text, files, commands, and status updates
 - **File Transfer**: Send files up to 100MB with progress tracking
