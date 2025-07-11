@@ -91,8 +91,8 @@ You are now chatting peer-to-peer with end-to-end encryption.
 A pre-built Windows executable with full drag & drop support is available:
 
 ### Quick Setup
-1. Download the latest `rust-p2p-chat-windows-*.zip` from [Releases](https://github.com/your-username/RustChat/releases)
-2. Extract and run `START-CHAT.bat`
+1. Build the Windows executable using the instructions below
+2. Run with `--gui` flag for drag & drop support
 3. Drag files directly onto the chat window to send them!
 
 ### Building for Windows
@@ -381,10 +381,9 @@ First, ensure you have Rust installed. If not, install it from [rustup.rs](https
 
 #### Windows
 
-##### Option 1: Pre-built Binary (Easiest)
-1. Download the latest `rust-p2p-chat-windows-*.zip` from [Releases](https://github.com/your-username/RustChat/releases)
-2. Extract and run `START-CHAT.bat`
-3. No installation required!
+##### Option 1: Pre-built Binary (Coming Soon)
+Pre-built binaries will be available in the [Releases](https://github.com/your-username/RustChat/releases) section.
+For now, please build from source using Option 2 below.
 
 ##### Option 2: Build from Source
 

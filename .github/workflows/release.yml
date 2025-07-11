@@ -1,0 +1,153 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          
+      - name: Build Windows Release
+        run: cargo build --release
+        
+      - name: Create Windows Package
+        shell: powershell
+        run: |
+          $VERSION = $env:GITHUB_REF_NAME -replace '^v', ''
+          if ($VERSION -eq '') { $VERSION = '1.0.0' }
+          
+          New-Item -ItemType Directory -Path "windows-package" -Force
+          Copy-Item "target\release\rust-p2p-chat.exe" -Destination "windows-package\rust-p2p-chat.exe"
+          Copy-Item "WINDOWS_DRAGDROP.md" -Destination "windows-package\README-DRAGDROP.txt"
+          Copy-Item "Readme.md" -Destination "windows-package\README.txt"
+          
+          # Create START-CHAT.bat
+          @"
+@echo off
+echo Starting Rust P2P Chat with GUI and drag & drop support...
+start rust-p2p-chat.exe --gui
+"@ | Out-File -FilePath "windows-package\START-CHAT.bat" -Encoding ASCII
+          
+          # Create desktop shortcut creator
+          @"
+@echo off
+echo Creating desktop shortcut...
+powershell -Command "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%USERPROFILE%\Desktop\Rust P2P Chat.lnk'); $Shortcut.TargetPath = '%~dp0rust-p2p-chat.exe'; $Shortcut.Arguments = '--gui'; $Shortcut.IconLocation = '%~dp0rust-p2p-chat.exe'; $Shortcut.Save()"
+echo Desktop shortcut created!
+pause
+"@ | Out-File -FilePath "windows-package\CREATE-DESKTOP-SHORTCUT.bat" -Encoding ASCII
+          
+          # Zip the package
+          Compress-Archive -Path "windows-package\*" -DestinationPath "rust-p2p-chat-windows-$VERSION.zip"
+          
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-release
+          path: rust-p2p-chat-windows-*.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          
+      - name: Build Linux Release
+        run: |
+          cargo build --release
+          chmod +x target/release/rust-p2p-chat
+          mv target/release/rust-p2p-chat rust-p2p-chat-linux-x64
+          
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-release
+          path: rust-p2p-chat-linux-x64
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          
+      - name: Build macOS Release
+        run: |
+          cargo build --release
+          chmod +x target/release/rust-p2p-chat
+          mv target/release/rust-p2p-chat rust-p2p-chat-macos-x64
+          
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-release
+          path: rust-p2p-chat-macos-x64
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            windows-release/*.zip
+            linux-release/rust-p2p-chat-linux-x64
+            macos-release/rust-p2p-chat-macos-x64
+          body: |
+            ## Rust P2P Chat Release
+            
+            ### Features
+            - 🚀 True peer-to-peer chat with no central server
+            - 🔒 End-to-end encryption (RSA + AES-256-GCM)
+            - 📁 Drag & drop file sharing (Windows GUI)
+            - 🎨 Rich terminal UI with colors
+            - 🖼️ GUI mode with visual file dropping
+            - 📎 File transfers up to 100MB
+            - 🌐 Cross-platform support
+            
+            ### Installation
+            
+            #### Windows
+            1. Download `rust-p2p-chat-windows-*.zip`
+            2. Extract and run `START-CHAT.bat`
+            3. Drag files onto the window to share!
+            
+            #### Linux/macOS
+            1. Download the appropriate binary
+            2. Make it executable: `chmod +x rust-p2p-chat-*`
+            3. Run: `./rust-p2p-chat-* --help`
+            
+            ### Quick Start
+            - **GUI Mode**: `rust-p2p-chat --gui`
+            - **Listen**: `rust-p2p-chat --port 8080`
+            - **Connect**: `rust-p2p-chat --connect peer-ip:8080`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
