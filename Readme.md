@@ -381,14 +381,40 @@ First, ensure you have Rust installed. If not, install it from [rustup.rs](https
 
 #### Windows
 
-1. **Install Rust (if not already installed):**
+##### Option 1: Pre-built Binary (Easiest)
+1. Download the latest `rust-p2p-chat-windows-*.zip` from [Releases](https://github.com/your-username/RustChat/releases)
+2. Extract and run `START-CHAT.bat`
+3. No installation required!
+
+##### Option 2: Build from Source
+
+1. **Install Rust:**
+
+   **Using winget (Recommended):**
+   ```powershell
+   # Install Rust
+   winget install Rustlang.Rustup
+   
+   # Run the installer (this will appear after winget finishes)
+   # If rustup-init doesn't run automatically, download it from https://win.rustup.rs/x86_64
+   # Follow the prompts (press Enter for defaults)
+   
+   # IMPORTANT: Restart PowerShell after installation
+   ```
+   
+   **Or download directly:**
+   - Go to https://rustup.rs/
+   - Download and run `rustup-init.exe`
+   - Follow installation prompts
+   - Restart PowerShell/Command Prompt
+
+2. **Verify installation:**
 ```powershell
-# Download and run rustup-init.exe from https://rustup.rs/
-# Or use winget:
-winget install Rustlang.Rust
+rustc --version
+cargo --version
 ```
 
-2. **Clone and build:**
+3. **Clone and build:**
 ```powershell
 # Clone the repository
 git clone https://github.com/your-username/RustChat.git
@@ -397,14 +423,55 @@ cd rust-p2p-chat
 # Build release version
 cargo build --release
 
-# Run tests
-cargo test
-
-# Run the application
-.\target\release\rust-p2p-chat.exe --help
+# The executable will be at: target\release\rust-p2p-chat.exe
 ```
 
-3. **Windows Firewall Note:**
+4. **Run with drag & drop GUI:**
+```powershell
+.\target\release\rust-p2p-chat.exe --gui
+```
+
+##### Building from WSL (Cross-compilation)
+
+If you prefer building from WSL for Windows:
+
+```bash
+# Install MinGW cross-compiler
+sudo apt update
+sudo apt install gcc-mingw-w64-x86-64
+
+# Use the build script
+./build-windows-from-wsl.sh
+
+# Or build manually
+rustup target add x86_64-pc-windows-gnu
+cargo build --release --target x86_64-pc-windows-gnu
+```
+
+##### Windows Build Scripts
+
+For convenience, use the provided scripts:
+- `build-windows.bat` - Build using Command Prompt
+- `build-windows.ps1` - Build using PowerShell (may require execution policy bypass)
+- `create-windows-installer.ps1` - Create distributable package
+
+**PowerShell Execution Policy:**
+If you get "script is not digitally signed" error:
+```powershell
+# Option 1: Bypass for single script
+powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
+
+# Option 2: Set for current session only
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+```
+
+##### Windows Features
+- **Drag & Drop**: Drag files directly onto the chat window
+- **File Browser**: Click 📎 button to browse files
+- **Auto GUI**: Launches in GUI mode by default on Windows
+- **No Console**: GUI mode runs without console window
+
+##### Windows Firewall Note
 - On first run, Windows Firewall may prompt you to allow the application
 - Allow access for both private and public networks if you plan to connect over the internet
 
