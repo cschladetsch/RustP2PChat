@@ -42,9 +42,19 @@ enum Commands {
     Config,
 }
 
+#[cfg(windows)]
+#[windows_subsystem = "windows"] // This prevents console window on Windows when using GUI
+
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let cli = Cli::parse();
+    
+    // On Windows, default to GUI mode if no arguments provided
+    #[cfg(windows)]
+    let use_gui = cli.gui || (std::env::args().len() == 1);
+    
+    #[cfg(not(windows))]
+    let use_gui = cli.gui;
 
     // Initialize tracing/logging
     let log_level = if cli.debug { "debug" } else { "info" };
@@ -64,8 +74,8 @@ async fn main() -> io::Result<()> {
     info!("Starting Rust P2P Chat v{}", env!("CARGO_PKG_VERSION"));
 
     // Handle GUI mode
-    if cli.gui {
-        info!("Launching GUI interface");
+    if use_gui {
+        info!("Launching GUI interface with drag & drop support");
         return rust_p2p_chat::gui::run_gui().map_err(|e| {
             error!("GUI error: {}", e);
             io::Error::new(io::ErrorKind::Other, format!("GUI error: {}", e))

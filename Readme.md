@@ -30,6 +30,7 @@ See [Features](Features.md) and [ChangeLog](ChangeLog.md)
 - **File Transfer**: Send files up to 100MB with progress tracking and auto-open
 - **Rich Terminal UI**: Colorful interface with encryption status indicators
 - **GUI Support**: Optional graphical interface for enhanced user experience
+- **Windows Drag & Drop**: Drag files directly onto the chat window (Windows executable)
 - **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
 - **Media Auto-Open**: Automatically open received images, videos, and documents
 - **Smart Downloads**: Files saved to system Downloads folder with verification
@@ -84,6 +85,26 @@ docker-compose up
 ```
 
 You are now chatting peer-to-peer with end-to-end encryption.
+
+## Windows Drag & Drop Binary
+
+A pre-built Windows executable with full drag & drop support is available:
+
+### Quick Setup
+1. Download the latest `rust-p2p-chat-windows-*.zip` from [Releases](https://github.com/your-username/RustChat/releases)
+2. Extract and run `START-CHAT.bat`
+3. Drag files directly onto the chat window to send them!
+
+### Building for Windows
+```powershell
+# Build with drag & drop support
+.\build-windows.ps1
+
+# Create installer package
+.\create-windows-installer.ps1
+```
+
+See [WINDOWS_DRAGDROP.md](WINDOWS_DRAGDROP.md) for detailed Windows features.
 
 ## Features
 

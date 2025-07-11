@@ -189,6 +189,3 @@ This document provides an overview of all documentation available for the Rust P
 - [ ] Links to related documentation
 - [ ] Updated table of contents
 
----
-
-*This documentation overview was last updated on June 21, 2025.*

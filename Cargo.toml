@@ -30,6 +30,30 @@ eframe = "0.28"
 egui = "0.28"
 egui_extras = "0.28"
 poll-promise = "0.3"
+rfd = "0.14"
 
 [dev-dependencies]
 tempfile = "3.8"
+
+# Windows-specific configuration
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "shellapi", "combaseapi", "objbase", "unknwnbase", "winerror", "ole2"] }
+
+# Build settings for Windows executable
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+
+# Windows build configuration
+[[bin]]
+name = "rust-p2p-chat"
+path = "src/main.rs"
+
+# Windows resources
+[package.metadata.winres]
+OriginalFilename = "rust-p2p-chat.exe"
+FileDescription = "Rust P2P Chat - Drag & Drop File Sharing"
+CompanyName = "RustChat"
+ProductName = "Rust P2P Chat"
+LegalCopyright = "MIT License"

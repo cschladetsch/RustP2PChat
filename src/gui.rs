@@ -1,6 +1,6 @@
 use crate::{config::Config, ChatError, P2PChat, Result};
 use eframe::egui;
-use egui::{Context, RichText, Ui};
+use egui::{Context, RichText, Ui, Response, Sense};
 use std::collections::VecDeque;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
@@ -8,6 +8,17 @@ use std::thread;
 use std::time::SystemTime;
 use tokio::runtime::Runtime;
 use tracing::{error, info};
+use std::path::PathBuf;
+
+// Helper function to load application icon
+fn load_icon() -> egui::IconData {
+    // Default icon - a simple chat bubble
+    egui::IconData {
+        rgba: vec![255; 32 * 32 * 4], // White 32x32 icon
+        width: 32,
+        height: 32,
+    }
+}
 
 pub struct ChatMessage {
     pub text: String,
@@ -49,6 +60,9 @@ pub struct P2PChatApp {
     // UI state
     auto_scroll: bool,
     show_timestamps: bool,
+    
+    // Drag and drop state
+    dropped_files: Arc<Mutex<Vec<egui::DroppedFile>>>,
 }
 
 #[derive(PartialEq, Default)]
@@ -78,6 +92,7 @@ impl Default for P2PChatApp {
             runtime: None,
             auto_scroll: true,
             show_timestamps: true,
+            dropped_files: Arc::new(Mutex::new(Vec::new())),
         }
     }
 }
@@ -207,10 +222,54 @@ impl P2PChatApp {
             self.current_message.clear();
         }
     }
+    
+    fn send_file(&mut self, path: PathBuf) {
+        let filename = path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("file")
+            .to_string();
+            
+        // Add to message list
+        self.add_message(
+            format!("Sending file: {}", filename),
+            self.nickname.clone(),
+            self.enable_encryption,
+            true,
+        );
+        
+        // In a real implementation, this would send the file through the chat backend
+        if let Some(ref sender) = self.message_sender {
+            let _ = sender.send(format!("/send {}", path.display()));
+        }
+    }
+    
+    fn handle_dropped_files(&mut self, ctx: &Context) {
+        // Check for newly dropped files
+        ctx.input(|i| {
+            if !i.raw.dropped_files.is_empty() {
+                let mut dropped = self.dropped_files.lock().unwrap();
+                dropped.extend(i.raw.dropped_files.clone());
+            }
+        });
+        
+        // Process dropped files
+        let files_to_process: Vec<egui::DroppedFile> = {
+            let mut dropped = self.dropped_files.lock().unwrap();
+            dropped.drain(..).collect()
+        };
+        
+        for file in files_to_process {
+            if let Some(path) = &file.path {
+                self.send_file(path.clone());
+            }
+        }
+    }
 }
 
 impl eframe::App for P2PChatApp {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        // Handle dropped files
+        self.handle_dropped_files(ctx);
         // Top menu bar
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -264,8 +323,9 @@ impl eframe::App for P2PChatApp {
         }
         self.show_settings = show_settings;
 
-        // Main chat area
-        egui::CentralPanel::default().show(ctx, |ui| {
+        // Main chat area with drag and drop support
+        let response = egui::CentralPanel::default()
+            .show(ctx, |ui| {
             ui.vertical(|ui| {
                 // Connection controls
                 ui.group(|ui| {
@@ -321,6 +381,14 @@ impl eframe::App for P2PChatApp {
                         response.request_focus();
                     }
 
+                    // File attachment button
+                    if ui.button("📎").on_hover_text("Attach file").clicked() {
+                        // Open file dialog
+                        if let Some(path) = rfd::FileDialog::new().pick_file() {
+                            self.send_file(path);
+                        }
+                    }
+
                     // Encryption indicator
                     let lock_symbol = if self.enable_encryption {
                         "🔒"
@@ -330,7 +398,34 @@ impl eframe::App for P2PChatApp {
                     ui.label(lock_symbol);
                 });
             });
-        });
+            
+            // Create an invisible drop target that covers the entire panel
+            let response = ui.allocate_response(ui.available_size(), Sense::hover());
+            response
+        })
+        .inner;
+        
+        // Visual feedback for drag and drop
+        if response.hovered() && ctx.input(|i| !i.raw.dropped_files.is_empty()) {
+            // Draw overlay when files are being dragged over
+            let painter = ctx.layer_painter(egui::LayerId::new(
+                egui::Order::Foreground,
+                egui::Id::new("drag_drop_overlay"),
+            ));
+            let rect = response.rect;
+            painter.rect_filled(
+                rect,
+                egui::Rounding::same(8.0),
+                egui::Color32::from_rgba_premultiplied(0, 0, 0, 100),
+            );
+            painter.text(
+                rect.center(),
+                egui::Align2::CENTER_CENTER,
+                "Drop files here to send",
+                egui::FontId::proportional(24.0),
+                egui::Color32::WHITE,
+            );
+        }
 
         // Request repaint to keep UI responsive
         ctx.request_repaint();
@@ -448,7 +543,9 @@ pub fn run_gui() -> Result<()> {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([800.0, 600.0])
             .with_min_inner_size([400.0, 300.0])
-            .with_title("Rust P2P Chat"),
+            .with_title("Rust P2P Chat - Drag & Drop Files")
+            .with_drag_and_drop(true)
+            .with_icon(load_icon()),
         ..Default::default()
     };
 
