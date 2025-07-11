@@ -86,7 +86,7 @@ Write-Host "4. Both can send/receive simultaneously" -ForegroundColor White
 Write-Host ""
 Write-Host "Commands available in chat:" -ForegroundColor Yellow
 Write-Host "  /help     - Show all commands" -ForegroundColor Gray
-Write-Host "  /send     - Send a file (alternative to drag & drop)" -ForegroundColor Gray
+Write-Host "  /send     - Send a file (alternative to drag && drop)" -ForegroundColor Gray
 Write-Host "  /nick     - Change nickname" -ForegroundColor Gray
 Write-Host "  /autoopen - Toggle auto-open for received files" -ForegroundColor Gray
 Write-Host ""
