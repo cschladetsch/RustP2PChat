@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # First peer - acts as listener
+  peer1:
+    build: .
+    container_name: p2p-chat-peer1
+    environment:
+      - RUST_LOG=info
+    command: ["--port", "8080", "--nickname", "Alice"]
+    ports:
+      - "8080:8080"
+    networks:
+      - p2p-network
+    stdin_open: true
+    tty: true
+
+  # Second peer - connects to first peer
+  peer2:
+    build: .
+    container_name: p2p-chat-peer2
+    environment:
+      - RUST_LOG=info
+    command: ["--connect", "peer1:8080", "--nickname", "Bob"]
+    depends_on:
+      - peer1
+    networks:
+      - p2p-network
+    stdin_open: true
+    tty: true
+
+  # Third peer (optional) - connects to first peer
+  peer3:
+    build: .
+    container_name: p2p-chat-peer3
+    environment:
+      - RUST_LOG=info
+    command: ["--connect", "peer1:8080", "--nickname", "Charlie"]
+    depends_on:
+      - peer1
+    networks:
+      - p2p-network
+    stdin_open: true
+    tty: true
+    profiles:
+      - multi
+
+networks:
+  p2p-network:
+    driver: bridge

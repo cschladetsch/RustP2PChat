@@ -1,0 +1,44 @@
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+target/
+Dockerfile
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+resources/
+
+# Shell scripts (not needed in container)
+shell/
+b
+r
+
+# Test files
+tests/
+benches/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Misc
+*.log
+*.tmp
+.env
+.env.*

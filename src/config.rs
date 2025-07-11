@@ -69,55 +69,55 @@ pub struct Config {
     /// User's display name in chat sessions.
     /// If None, a default nickname will be generated.
     pub nickname: Option<String>,
-    
+
     /// Default port to listen on when no port is specified.
     /// Valid range: 1024-65535 (privileged ports require elevated permissions).
     pub default_port: u16,
-    
+
     /// Size of the message buffer in bytes.
     /// Larger buffers can handle bigger messages but use more memory.
     pub buffer_size: usize,
-    
+
     /// Interval between heartbeat messages in seconds.
     /// Used to detect disconnected peers and maintain connections.
     pub heartbeat_interval_secs: u64,
-    
+
     /// Number of times to retry failed connection attempts.
     /// Set to 0 to disable automatic reconnection.
     pub reconnect_attempts: u32,
-    
+
     /// Delay in seconds between reconnection attempts.
     /// Uses exponential backoff starting from this value.
     pub reconnect_delay_secs: u64,
-    
+
     /// Whether to enable end-to-end encryption by default.
     /// When true, all messages are encrypted using RSA + AES-256-GCM.
     pub enable_encryption: bool,
-    
+
     /// Logging level for the application.
     /// Valid values: "trace", "debug", "info", "warn", "error"
     pub log_level: String,
-    
+
     /// Whether to save chat history to a file.
     /// History includes messages, file transfers, and connection events.
     pub save_history: bool,
-    
+
     /// Custom path for the chat history file.
     /// If None, uses platform-specific data directory.
     pub history_file: Option<PathBuf>,
-    
+
     /// Maximum file size for transfers in megabytes.
     /// Files larger than this limit will be rejected.
     pub max_file_size_mb: u64,
-    
+
     /// Custom directory for downloaded files.
     /// If None, uses the system's Downloads folder.
     pub download_dir: Option<PathBuf>,
-    
+
     /// Whether to automatically open received media files.
     /// Uses the system's default application for each file type.
     pub auto_open_media: bool,
-    
+
     /// File extensions that are considered "media" for auto-opening.
     /// Extensions are matched case-insensitively.
     pub media_extensions: Vec<String>,

@@ -3,8 +3,8 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
-    let filter = EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| EnvFilter::new("rust_p2p_chat=info"));
+    let filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("rust_p2p_chat=info"));
 
     tracing_subscriber::registry()
         .with(
@@ -17,9 +17,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     println!("Starting Rust P2P Chat GUI...");
-    
+
     // Run the GUI
     run_gui()?;
-    
+
     Ok(())
 }

@@ -226,7 +226,7 @@ impl CommandHandler {
     ///     
     ///     // Execute nickname command
     ///     let response = handler.handle_command(
-    ///         Command::SetNickname("Alice".to_string()), 
+    ///         Command::SetNickname("Alice".to_string()),
     ///         &peer_manager
     ///     ).await?;
     ///     println!("{}", response);

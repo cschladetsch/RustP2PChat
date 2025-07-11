@@ -280,10 +280,10 @@ impl PeerManager {
     /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
     /// let (peer_manager, _) = PeerManager::new();
     /// let msg = Message::new_text("Hello everyone!".to_string());
-    /// 
+    ///
     /// // Broadcast to all peers
     /// peer_manager.broadcast(msg.clone(), None).await?;
-    /// 
+    ///
     /// // Broadcast to all except "peer1"
     /// peer_manager.broadcast(msg, Some("peer1")).await?;
     /// # Ok(())

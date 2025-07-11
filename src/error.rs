@@ -78,57 +78,57 @@ pub enum ChatError {
     /// system-level errors. The inner `io::Error` provides specific
     /// details about what went wrong.
     Io(io::Error),
-    
+
     /// Network connection error with descriptive message.
     ///
     /// Used for general connection issues that don't fit into
     /// more specific categories like `BindFailed` or `ConnectFailed`.
     Connection(String),
-    
+
     /// Protocol-level error in message handling.
     ///
     /// Indicates problems with message parsing, serialization,
     /// or protocol violations between peers.
     Protocol(String),
-    
+
     /// Invalid or corrupted message received.
     ///
     /// Used when a message is received but cannot be processed
     /// due to format issues or corruption.
     InvalidMessage(String),
-    
+
     /// The peer has disconnected from the chat session.
     ///
     /// This is a normal termination condition and not necessarily
     /// an error, but requires handling in the application flow.
     PeerDisconnected,
-    
+
     /// Failed to bind to the specified address and port.
     ///
     /// Contains the address that failed to bind and the underlying
     /// I/O error. Common causes include port already in use or
     /// insufficient permissions.
     BindFailed(String, io::Error),
-    
+
     /// Failed to connect to the specified peer address.
     ///
     /// Contains the target address and the underlying I/O error.
     /// Common causes include peer not listening, network issues,
     /// or invalid addresses.
     ConnectFailed(String, io::Error),
-    
+
     /// Encryption or decryption operation failed.
     ///
     /// Covers key generation, key exchange, message encryption,
     /// and decryption failures. May indicate compromised security.
     Encryption(String),
-    
+
     /// File transfer operation failed.
     ///
     /// Covers file reading, writing, hash verification, and
     /// size limit violations during file transfer operations.
     FileTransfer(String),
-    
+
     /// Configuration file operation failed.
     ///
     /// Covers loading, parsing, and saving configuration files.

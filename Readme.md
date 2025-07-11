@@ -60,6 +60,8 @@ cargo run --release
 
 ### Start Chatting in 30 Seconds
 
+#### Option 1: Using Cargo (Rust installed)
+
 **Terminal 1 (First peer):**
 ```bash
 cargo run --release -- --port 8080
@@ -68,6 +70,25 @@ cargo run --release -- --port 8080
 **Terminal 2 (Second peer):**
 ```bash
 cargo run --release -- --connect localhost:8080
+```
+
+#### Option 2: Using Docker (No Rust required)
+
+**Terminal 1 (First peer):**
+```bash
+docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080
+```
+
+**Terminal 2 (Second peer):**
+```bash
+docker run -it --rm ghcr.io/cschladetsch/rust-p2p-chat --connect host.docker.internal:8080
+```
+
+#### Option 3: Docker Compose Demo
+
+```bash
+# Run two peers automatically
+docker-compose up
 ```
 
 You are now chatting peer-to-peer with end-to-end encryption.
@@ -81,6 +102,10 @@ You are now chatting peer-to-peer with end-to-end encryption.
 - **Zero Configuration**: Start chatting with just a port number or peer address
 - **Cross-platform Support**: Works seamlessly on Linux, macOS, and Windows
 - **End-to-End Encryption**: All messages encrypted using military-grade algorithms
+- **Custom Error Types**: Comprehensive error handling with user-friendly messages
+- **Message Protocol**: Support for different message types (text, files, commands, status)
+- **Message Buffering**: Handles messages up to 8KB with configurable buffer size
+- **Heartbeat Mechanism**: Keep-alive functionality to detect connection status
 
 ### Technical Features
 - **Async/Await Excellence**: Built on Tokio for high-performance async I/O
@@ -89,7 +114,10 @@ You are now chatting peer-to-peer with end-to-end encryption.
 - **Graceful Error Handling**: Robust connection management and clean disconnection
 - **Smart Connection Logic**: Simultaneous connect/listen with automatic fallback
 - **Low Latency**: Direct TCP connections ensure minimal message delay
-- **Command-line Interface**: Supports both interactive mode and CLI arguments
+- **Command-line Interface**: Full CLI support with clap, including debug mode
+- **Configuration File Support**: TOML-based configuration with customizable settings
+- **File Transfer Capability**: Send files up to 100MB with progress tracking
+- **Command System**: Built-in commands (/help, /quit, /send, /info, /nick, /autoopen)
 
 ### Security Features
 - **1024-bit RSA Key Exchange**: Secure public key cryptography for initial handshake
@@ -97,6 +125,7 @@ You are now chatting peer-to-peer with end-to-end encryption.
 - **Automatic Key Generation**: New encryption keys for every session
 - **Message Authentication**: Built-in integrity verification with GCM
 - **Visual Encryption Indicators**: Icon shows when messages are encrypted
+- **TLS Support**: Prepared for TLS encryption (can be enabled)
 
 ### Building from Source
 
@@ -411,6 +440,59 @@ cargo test
 # Build with specific features (if available)
 cargo build --release --features "feature_name"
 ```
+
+### Docker Build
+
+The application can also be built and run using Docker for easy deployment and isolation.
+
+#### Quick Start with Docker
+
+```bash
+# Using the helper script (recommended)
+./docker-chat.sh build           # Build the Docker image
+./docker-chat.sh run --port 8080 --nickname Alice  # Run as listener
+./docker-chat.sh run --connect localhost:8080 --nickname Bob  # Connect to peer
+
+# Or run a demo with two peers
+./docker-chat.sh demo
+
+# Run three peers
+./docker-chat.sh multi
+```
+
+#### Manual Docker Commands
+
+```bash
+# Build the image
+docker build -t rust-p2p-chat .
+
+# Run as listener
+docker run -it --rm -p 8080:8080 rust-p2p-chat --port 8080 --nickname Alice
+
+# Run as connector (in another terminal)
+docker run -it --rm rust-p2p-chat --connect host.docker.internal:8080 --nickname Bob
+```
+
+#### Docker Compose
+
+```bash
+# Run two peers automatically
+docker-compose up
+
+# Run three peers
+docker-compose --profile multi up
+
+# Development mode with auto-reload
+docker-compose -f docker-compose.dev.yml up
+```
+
+#### Docker Features
+
+- **Multi-stage build**: Minimal final image (~50MB)
+- **Non-root user**: Runs as unprivileged user for security
+- **Pre-configured networking**: Peers can find each other by service name
+- **Development mode**: Auto-recompilation on code changes
+- **Easy cleanup**: `./docker-chat.sh clean` removes all containers and images
 
 ### Troubleshooting Build Issues
 

@@ -7,11 +7,11 @@ use tokio::sync::mpsc;
 #[tokio::test]
 async fn test_peer_manager_creation() {
     let (manager, mut _receiver) = PeerManager::new();
-    
+
     // Test that manager is created successfully
     let peer_count = manager.peer_count().await;
     assert_eq!(peer_count, 0);
-    
+
     let peers = manager.list_peers().await;
     assert!(peers.is_empty());
 }
@@ -25,7 +25,7 @@ async fn test_peer_info_creation() {
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     assert_eq!(peer_info.id, "test_peer_1");
     assert_eq!(peer_info.nickname, Some("TestUser".to_string()));
     assert_eq!(peer_info.address, addr);
@@ -41,7 +41,7 @@ async fn test_peer_info_without_nickname() {
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     assert_eq!(peer_info.id, "anonymous_peer");
     assert_eq!(peer_info.nickname, None);
     assert_eq!(peer_info.address, addr);
@@ -56,13 +56,13 @@ async fn test_peer_creation() {
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     // Create a mock stream (we'll use a placeholder since we can't easily create a real TcpStream in tests)
     // In practice, this would come from accepting a connection
     // For testing purposes, we'll skip the actual Peer creation with stream
-    
+
     let (_tx, _rx) = mpsc::channel::<rust_p2p_chat::protocol::Message>(10);
-    
+
     // Note: In actual usage, Peer would be created with a real TcpStream
     // For this test, we just verify the PeerInfo can be created correctly
     assert_eq!(peer_info.id, "peer_test");
@@ -79,10 +79,10 @@ async fn test_peer_clone() {
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     // Test PeerInfo cloning behavior
     let cloned_info = peer_info.clone();
-    
+
     assert_eq!(peer_info.id, cloned_info.id);
     assert_eq!(peer_info.nickname, cloned_info.nickname);
     assert_eq!(peer_info.address, cloned_info.address);
@@ -93,21 +93,21 @@ async fn test_peer_clone() {
 async fn test_peer_info_clone() {
     let addr: SocketAddr = "10.0.0.1:5000".parse().unwrap();
     let original_time = SystemTime::now();
-    
+
     let peer_info = PeerInfo {
         id: "info_clone_test".to_string(),
         nickname: Some("InfoClone".to_string()),
         address: addr,
         connected_at: original_time,
     };
-    
+
     let cloned_info = peer_info.clone();
-    
+
     assert_eq!(peer_info.id, cloned_info.id);
     assert_eq!(peer_info.nickname, cloned_info.nickname);
     assert_eq!(peer_info.address, cloned_info.address);
     assert_eq!(peer_info.connected_at, cloned_info.connected_at);
-    
+
     // Ensure deep clone (different memory locations for String)
     assert_ne!(peer_info.id.as_ptr(), cloned_info.id.as_ptr());
 }
@@ -115,13 +115,13 @@ async fn test_peer_info_clone() {
 #[tokio::test]
 async fn test_peer_manager_multiple_operations() {
     let (manager, mut _receiver) = PeerManager::new();
-    
+
     // Test multiple peer_count calls
     for _ in 0..5 {
         let count = manager.peer_count().await;
         assert_eq!(count, 0);
     }
-    
+
     // Test multiple list_peers calls
     for _ in 0..5 {
         let peers = manager.list_peers().await;
@@ -133,10 +133,10 @@ async fn test_peer_manager_multiple_operations() {
 async fn test_concurrent_peer_access() {
     let (manager, mut _receiver) = PeerManager::new();
     let manager = Arc::new(manager);
-    
+
     // Spawn multiple tasks accessing peer manager concurrently
     let mut handles = Vec::new();
-    
+
     for i in 0..10 {
         let mgr = manager.clone();
         let handle = tokio::spawn(async move {
@@ -146,7 +146,7 @@ async fn test_concurrent_peer_access() {
         });
         handles.push(handle);
     }
-    
+
     // Wait for all tasks to complete
     for handle in handles {
         let (_task_id, count, peer_list_len) = handle.await.unwrap();
@@ -163,7 +163,7 @@ async fn test_peer_info_with_different_addresses() {
         "192.168.1.100:3000".parse().unwrap(),
         "[::1]:8080".parse().unwrap(), // IPv6
     ];
-    
+
     for (i, addr) in addresses.iter().enumerate() {
         let peer_info = PeerInfo {
             id: format!("peer_{}", i),
@@ -171,7 +171,7 @@ async fn test_peer_info_with_different_addresses() {
             address: *addr,
             connected_at: SystemTime::now(),
         };
-        
+
         assert_eq!(peer_info.address, *addr);
         assert_eq!(peer_info.id, format!("peer_{}", i));
     }
@@ -180,24 +180,24 @@ async fn test_peer_info_with_different_addresses() {
 #[tokio::test]
 async fn test_peer_info_time_ordering() {
     let addr: SocketAddr = "127.0.0.1:8080".parse().unwrap();
-    
+
     let peer1 = PeerInfo {
         id: "peer1".to_string(),
         nickname: None,
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     // Small delay to ensure different timestamps
     tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
-    
+
     let peer2 = PeerInfo {
         id: "peer2".to_string(),
         nickname: None,
         address: addr,
         connected_at: SystemTime::now(),
     };
-    
+
     // peer1 should be connected before peer2
     assert!(peer1.connected_at < peer2.connected_at);
 }
@@ -205,24 +205,28 @@ async fn test_peer_info_time_ordering() {
 #[tokio::test]
 async fn test_peer_with_special_characters() {
     let addr: SocketAddr = "127.0.0.1:8080".parse().unwrap();
-    
+
     let special_names = vec![
-        "用户", // Chinese characters
-        "José María", // Accented characters
-        "User🎉", // Emoji
+        "用户",          // Chinese characters
+        "José María",    // Accented characters
+        "User🎉",        // Emoji
         "test@user.com", // Email-like
         "user-with-dashes_and_underscores",
         "", // Empty string
     ];
-    
+
     for (i, name) in special_names.iter().enumerate() {
         let peer_info = PeerInfo {
             id: format!("special_peer_{}", i),
-            nickname: if name.is_empty() { None } else { Some(name.to_string()) },
+            nickname: if name.is_empty() {
+                None
+            } else {
+                Some(name.to_string())
+            },
             address: addr,
             connected_at: SystemTime::now(),
         };
-        
+
         if name.is_empty() {
             assert_eq!(peer_info.nickname, None);
         } else {
@@ -231,14 +235,14 @@ async fn test_peer_with_special_characters() {
     }
 }
 
-#[tokio::test] 
+#[tokio::test]
 async fn test_peer_manager_stress() {
     let (manager, mut _receiver) = PeerManager::new();
     let manager = Arc::new(manager);
-    
+
     // Stress test with many concurrent operations
     let mut handles = Vec::new();
-    
+
     for i in 0..100 {
         let mgr = manager.clone();
         let handle = tokio::spawn(async move {
@@ -251,7 +255,7 @@ async fn test_peer_manager_stress() {
         });
         handles.push(handle);
     }
-    
+
     // All operations should complete successfully
     for handle in handles {
         let result = handle.await.unwrap();
@@ -268,7 +272,7 @@ fn test_peer_info_debug_format() {
         address: addr,
         connected_at: SystemTime::UNIX_EPOCH,
     };
-    
+
     let debug_str = format!("{:?}", peer_info);
     assert!(debug_str.contains("debug_test"));
     assert!(debug_str.contains("DebugUser"));
@@ -278,19 +282,17 @@ fn test_peer_info_debug_format() {
 #[tokio::test]
 async fn test_peer_manager_receiver() {
     let (_manager, mut receiver) = PeerManager::new();
-    
+
     // Test that receiver exists and can be used
     // Since PeerManager doesn't send messages in the current implementation,
     // we just verify the receiver was created properly
-    
+
     let try_recv_result = receiver.try_recv();
     assert!(try_recv_result.is_err()); // Should be empty initially
-    
+
     // Test with timeout to ensure non-blocking behavior
-    let timeout_result = tokio::time::timeout(
-        tokio::time::Duration::from_millis(10),
-        receiver.recv()
-    ).await;
+    let timeout_result =
+        tokio::time::timeout(tokio::time::Duration::from_millis(10), receiver.recv()).await;
     assert!(timeout_result.is_err()); // Should timeout since no messages
 }
 
@@ -305,7 +307,7 @@ async fn test_peer_edge_cases() {
         connected_at: SystemTime::now(),
     };
     assert_eq!(peer_info.address.port(), 65535);
-    
+
     // Test with minimum port number
     let min_port_addr: SocketAddr = "127.0.0.1:1".parse().unwrap();
     let peer_info = PeerInfo {
@@ -315,7 +317,7 @@ async fn test_peer_edge_cases() {
         connected_at: SystemTime::now(),
     };
     assert_eq!(peer_info.address.port(), 1);
-    
+
     // Test with very long ID
     let long_id = "a".repeat(1000);
     let peer_info = PeerInfo {

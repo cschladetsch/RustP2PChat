@@ -54,45 +54,48 @@ fn test_command_parsing_nickname() {
     } else {
         panic!("Expected SetNickname command");
     }
-    
+
     if let Some(Command::SetNickname(nick)) = CommandHandler::parse_command("/nickname Bob Smith") {
         assert_eq!(nick, "Bob Smith");
     } else {
         panic!("Expected SetNickname command");
     }
-    
+
     // Test nickname with spaces
     if let Some(Command::SetNickname(nick)) = CommandHandler::parse_command("/nick John Doe Jr.") {
         assert_eq!(nick, "John Doe Jr.");
     } else {
         panic!("Expected SetNickname command");
     }
-    
+
     // Test empty nickname
     assert!(CommandHandler::parse_command("/nick").is_none());
 }
 
 #[test]
 fn test_command_parsing_send_file() {
-    if let Some(Command::SendFile(path)) = CommandHandler::parse_command("/send /path/to/file.txt") {
+    if let Some(Command::SendFile(path)) = CommandHandler::parse_command("/send /path/to/file.txt")
+    {
         assert_eq!(path, "/path/to/file.txt");
     } else {
         panic!("Expected SendFile command");
     }
-    
+
     if let Some(Command::SendFile(path)) = CommandHandler::parse_command("/file document.pdf") {
         assert_eq!(path, "document.pdf");
     } else {
         panic!("Expected SendFile command");
     }
-    
+
     // Test file path with spaces
-    if let Some(Command::SendFile(path)) = CommandHandler::parse_command("/send /path/with spaces/file.txt") {
+    if let Some(Command::SendFile(path)) =
+        CommandHandler::parse_command("/send /path/with spaces/file.txt")
+    {
         assert_eq!(path, "/path/with spaces/file.txt");
     } else {
         panic!("Expected SendFile command");
     }
-    
+
     // Test empty file path
     assert!(CommandHandler::parse_command("/send").is_none());
 }
@@ -142,13 +145,16 @@ fn test_command_parsing_case_sensitivity() {
 #[test]
 fn test_command_parsing_with_extra_spaces() {
     // Test commands with extra spaces (split_whitespace normalizes to single spaces)
-    if let Some(Command::SetNickname(nick)) = CommandHandler::parse_command("/nick    Alice   Bob") {
+    if let Some(Command::SetNickname(nick)) = CommandHandler::parse_command("/nick    Alice   Bob")
+    {
         assert_eq!(nick, "Alice Bob");
     } else {
         panic!("Expected SetNickname command");
     }
-    
-    if let Some(Command::SendFile(path)) = CommandHandler::parse_command("/send    /path/to/file.txt") {
+
+    if let Some(Command::SendFile(path)) =
+        CommandHandler::parse_command("/send    /path/to/file.txt")
+    {
         assert_eq!(path, "/path/to/file.txt");
     } else {
         panic!("Expected SendFile command");
@@ -160,10 +166,10 @@ async fn test_command_handler_help() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let result = handler.handle_command(Command::Help, &peer_manager).await;
     assert!(result.is_ok());
-    
+
     let help_text = result.unwrap();
     assert!(help_text.contains("/help"));
     assert!(help_text.contains("/quit"));
@@ -181,13 +187,13 @@ async fn test_command_handler_info() {
         max_file_size_mb: 50,
         ..Default::default()
     };
-    
+
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let result = handler.handle_command(Command::Info, &peer_manager).await;
     assert!(result.is_ok());
-    
+
     let info_text = result.unwrap();
     assert!(info_text.contains("TestUser"));
     assert!(info_text.contains("Enabled")); // Encryption enabled
@@ -200,10 +206,12 @@ async fn test_command_handler_list_peers_empty() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
-    let result = handler.handle_command(Command::ListPeers, &peer_manager).await;
+
+    let result = handler
+        .handle_command(Command::ListPeers, &peer_manager)
+        .await;
     assert!(result.is_ok());
-    
+
     let peers_text = result.unwrap();
     assert!(peers_text.contains("No peers connected"));
 }
@@ -213,13 +221,12 @@ async fn test_command_handler_set_nickname() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let new_nickname = "NewTestUser".to_string();
-    let result = handler.handle_command(
-        Command::SetNickname(new_nickname.clone()),
-        &peer_manager
-    ).await;
-    
+    let result = handler
+        .handle_command(Command::SetNickname(new_nickname.clone()), &peer_manager)
+        .await;
+
     assert!(result.is_ok());
     let response = result.unwrap();
     assert!(response.contains("NewTestUser"));
@@ -231,10 +238,10 @@ async fn test_command_handler_quit() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let result = handler.handle_command(Command::Quit, &peer_manager).await;
     assert!(result.is_ok());
-    
+
     let response = result.unwrap();
     assert_eq!(response, "Goodbye!");
 }
@@ -244,13 +251,12 @@ async fn test_command_handler_send_file() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let file_path = "/test/path/file.txt".to_string();
-    let result = handler.handle_command(
-        Command::SendFile(file_path.clone()),
-        &peer_manager
-    ).await;
-    
+    let result = handler
+        .handle_command(Command::SendFile(file_path.clone()), &peer_manager)
+        .await;
+
     assert!(result.is_ok());
     let response = result.unwrap();
     assert!(response.contains("Preparing to send file"));
@@ -262,10 +268,10 @@ async fn test_command_handler_stats() {
     let config = Config::default();
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let result = handler.handle_command(Command::Stats, &peer_manager).await;
     assert!(result.is_ok());
-    
+
     let response = result.unwrap();
     assert!(response.contains("Message reliability statistics"));
     assert!(response.contains("acknowledgments"));
@@ -277,13 +283,13 @@ async fn test_command_handler_with_encryption_disabled() {
         enable_encryption: false,
         ..Default::default()
     };
-    
+
     let mut handler = CommandHandler::new(config);
     let peer_manager = PeerManager::new().0;
-    
+
     let result = handler.handle_command(Command::Info, &peer_manager).await;
     assert!(result.is_ok());
-    
+
     let info_text = result.unwrap();
     assert!(info_text.contains("Disabled")); // Encryption disabled
 }
@@ -294,11 +300,11 @@ fn test_command_handler_new() {
         nickname: Some("HandlerTest".to_string()),
         ..Default::default()
     };
-    
+
     let _handler = CommandHandler::new(config.clone());
     // We can't directly access the internal config, but we can test that it was created
     // This test mainly ensures the constructor doesn't panic
-    
+
     // Test that we can create a handler with default config
     let _default_handler = CommandHandler::new(Config::default());
     // Similarly, just ensuring no panic

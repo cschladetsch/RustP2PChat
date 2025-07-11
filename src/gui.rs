@@ -35,35 +35,30 @@ pub struct P2PChatApp {
     current_message: String,
     connection_status: ConnectionStatus,
     show_settings: bool,
-    
+
     // Connection settings
     listen_port: String,
     peer_address: String,
     nickname: String,
     enable_encryption: bool,
-    
+
     // Chat backend communication
     message_sender: Option<mpsc::Sender<String>>,
     runtime: Option<Arc<Runtime>>,
-    
+
     // UI state
     auto_scroll: bool,
     show_timestamps: bool,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Default)]
 enum ConnectionStatus {
+    #[default]
     Disconnected,
     Connecting,
     Connected(String),
     #[allow(dead_code)]
     Error(String),
-}
-
-impl Default for ConnectionStatus {
-    fn default() -> Self {
-        ConnectionStatus::Disconnected
-    }
 }
 
 impl Default for P2PChatApp {
@@ -91,7 +86,7 @@ impl P2PChatApp {
     pub fn new() -> Self {
         Self::default()
     }
-    
+
     fn add_message(&mut self, text: String, sender: String, is_encrypted: bool, is_file: bool) {
         let message = ChatMessage {
             text,
@@ -100,7 +95,7 @@ impl P2PChatApp {
             is_encrypted,
             is_file,
         };
-        
+
         if let Ok(mut messages) = self.messages.lock() {
             messages.push_back(message);
             // Keep only last 1000 messages
@@ -109,27 +104,27 @@ impl P2PChatApp {
             }
         }
     }
-    
+
     fn connect_to_peer(&mut self, peer_addr: Option<String>) {
         if self.runtime.is_some() {
             self.disconnect();
         }
-        
+
         self.connection_status = ConnectionStatus::Connecting;
-        
+
         let port: u16 = self.listen_port.parse().unwrap_or(8080);
         let config = self.config.clone();
         let messages = self.messages.clone();
-        
+
         // Create message channel
         let (tx, _rx) = mpsc::channel();
         self.message_sender = Some(tx);
-        
+
         // Create runtime and spawn chat task
         let runtime = Arc::new(Runtime::new().expect("Failed to create Tokio runtime"));
         let rt_clone = runtime.clone();
         self.runtime = Some(runtime);
-        
+
         let peer_addr_clone = peer_addr.clone();
         thread::spawn(move || {
             rt_clone.block_on(async {
@@ -140,7 +135,7 @@ impl P2PChatApp {
                         return;
                     }
                 };
-                
+
                 // Add system message
                 if let Ok(mut msgs) = messages.lock() {
                     msgs.push_back(ChatMessage {
@@ -155,7 +150,7 @@ impl P2PChatApp {
                         is_file: false,
                     });
                 }
-                
+
                 // Start chat (this will block)
                 if let Err(e) = chat.start(port, peer_addr_clone).await {
                     error!("Chat error: {}", e);
@@ -171,7 +166,7 @@ impl P2PChatApp {
                 }
             });
         });
-        
+
         // Update status
         if let Some(ref addr) = peer_addr {
             self.connection_status = ConnectionStatus::Connected(addr.clone());
@@ -179,18 +174,23 @@ impl P2PChatApp {
             self.connection_status = ConnectionStatus::Connected(format!("Listening on {}", port));
         }
     }
-    
+
     fn disconnect(&mut self) {
         self.message_sender = None;
         self.runtime = None;
         self.connection_status = ConnectionStatus::Disconnected;
-        self.add_message("Disconnected".to_string(), "System".to_string(), false, false);
+        self.add_message(
+            "Disconnected".to_string(),
+            "System".to_string(),
+            false,
+            false,
+        );
     }
-    
+
     fn send_message(&mut self) {
         if !self.current_message.trim().is_empty() {
             let message = self.current_message.clone();
-            
+
             // Add to our message list
             self.add_message(
                 message.clone(),
@@ -198,12 +198,12 @@ impl P2PChatApp {
                 self.enable_encryption,
                 false,
             );
-            
+
             // Send through channel (in a real implementation, this would go to the chat backend)
             if let Some(ref sender) = self.message_sender {
                 let _ = sender.send(message);
             }
-            
+
             self.current_message.clear();
         }
     }
@@ -230,14 +230,14 @@ impl eframe::App for P2PChatApp {
                         ui.close_menu();
                     }
                 });
-                
+
                 ui.menu_button("Settings", |ui| {
                     if ui.button("Open Settings").clicked() {
                         self.show_settings = true;
                         ui.close_menu();
                     }
                 });
-                
+
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     // Connection status indicator
                     let (status_text, status_color) = match &self.connection_status {
@@ -246,12 +246,12 @@ impl eframe::App for P2PChatApp {
                         ConnectionStatus::Connected(addr) => (addr.as_str(), egui::Color32::GREEN),
                         ConnectionStatus::Error(err) => (err.as_str(), egui::Color32::RED),
                     };
-                    
+
                     ui.colored_label(status_color, status_text);
                 });
             });
         });
-        
+
         // Settings window
         let mut show_settings = self.show_settings;
         if show_settings {
@@ -263,7 +263,7 @@ impl eframe::App for P2PChatApp {
                 });
         }
         self.show_settings = show_settings;
-        
+
         // Main chat area
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.vertical(|ui| {
@@ -272,12 +272,12 @@ impl eframe::App for P2PChatApp {
                     ui.horizontal(|ui| {
                         ui.label("Listen Port:");
                         ui.text_edit_singleline(&mut self.listen_port);
-                        
+
                         ui.separator();
-                        
+
                         ui.label("Peer Address:");
                         ui.text_edit_singleline(&mut self.peer_address);
-                        
+
                         if ui.button("Connect").clicked() {
                             if !self.peer_address.is_empty() {
                                 self.connect_to_peer(Some(self.peer_address.clone()));
@@ -287,9 +287,9 @@ impl eframe::App for P2PChatApp {
                         }
                     });
                 });
-                
+
                 ui.separator();
-                
+
                 // Chat messages area
                 let available_height = ui.available_height() - 60.0; // Reserve space for input
                 egui::ScrollArea::vertical()
@@ -303,31 +303,35 @@ impl eframe::App for P2PChatApp {
                             }
                         }
                     });
-                
+
                 ui.separator();
-                
+
                 // Message input area
                 ui.horizontal(|ui| {
                     let response = ui.text_edit_singleline(&mut self.current_message);
-                    
+
                     // Handle Enter key
                     if response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                         self.send_message();
                         response.request_focus();
                     }
-                    
+
                     if ui.button("Send").clicked() {
                         self.send_message();
                         response.request_focus();
                     }
-                    
+
                     // Encryption indicator
-                    let lock_symbol = if self.enable_encryption { "🔒" } else { "🔓" };
+                    let lock_symbol = if self.enable_encryption {
+                        "🔒"
+                    } else {
+                        "🔓"
+                    };
                     ui.label(lock_symbol);
                 });
             });
         });
-        
+
         // Request repaint to keep UI responsive
         ctx.request_repaint();
     }
@@ -348,7 +352,7 @@ impl P2PChatApp {
                     );
                 }
             }
-            
+
             // Sender name
             let sender_color = if msg.sender == "System" {
                 egui::Color32::YELLOW
@@ -357,53 +361,57 @@ impl P2PChatApp {
             } else {
                 egui::Color32::LIGHT_BLUE
             };
-            
-            ui.label(RichText::new(format!("{}:", msg.sender)).color(sender_color).strong());
-            
+
+            ui.label(
+                RichText::new(format!("{}:", msg.sender))
+                    .color(sender_color)
+                    .strong(),
+            );
+
             // Message content
             let mut message_text = RichText::new(&msg.text);
-            
+
             if msg.is_file {
                 message_text = message_text.color(egui::Color32::LIGHT_YELLOW);
                 ui.label("📁");
             }
-            
+
             ui.label(message_text);
-            
+
             // Encryption indicator
             if msg.is_encrypted {
                 ui.label(RichText::new("🔒").color(egui::Color32::GREEN));
             }
         });
     }
-    
+
     fn show_settings_ui(&mut self, ui: &mut Ui) {
         ui.group(|ui| {
             ui.label("General Settings");
-            
+
             ui.horizontal(|ui| {
                 ui.label("Nickname:");
                 ui.text_edit_singleline(&mut self.nickname);
             });
-            
+
             ui.checkbox(&mut self.enable_encryption, "Enable encryption");
             ui.checkbox(&mut self.auto_scroll, "Auto-scroll messages");
             ui.checkbox(&mut self.show_timestamps, "Show timestamps");
         });
-        
+
         ui.separator();
-        
+
         ui.group(|ui| {
             ui.label("Connection Settings");
-            
+
             ui.horizontal(|ui| {
                 ui.label("Default Port:");
                 ui.text_edit_singleline(&mut self.listen_port);
             });
         });
-        
+
         ui.separator();
-        
+
         ui.horizontal(|ui| {
             if ui.button("Save Settings").clicked() {
                 // Update config
@@ -412,7 +420,7 @@ impl P2PChatApp {
                 if let Ok(port) = self.listen_port.parse::<u16>() {
                     self.config.default_port = port;
                 }
-                
+
                 // Save to file
                 if let Err(e) = self.config.save() {
                     error!("Failed to save config: {}", e);
@@ -420,11 +428,15 @@ impl P2PChatApp {
                     info!("Settings saved successfully");
                 }
             }
-            
+
             if ui.button("Reset to Defaults").clicked() {
                 self.config = Config::default();
                 self.listen_port = self.config.default_port.to_string();
-                self.nickname = self.config.nickname.clone().unwrap_or_else(|| "You".to_string());
+                self.nickname = self
+                    .config
+                    .nickname
+                    .clone()
+                    .unwrap_or_else(|| "You".to_string());
                 self.enable_encryption = self.config.enable_encryption;
             }
         });
@@ -439,13 +451,18 @@ pub fn run_gui() -> Result<()> {
             .with_title("Rust P2P Chat"),
         ..Default::default()
     };
-    
+
     eframe::run_native(
         "Rust P2P Chat",
         options,
         Box::new(|_cc| Ok(Box::new(P2PChatApp::new()))),
     )
-    .map_err(|e| ChatError::Io(std::io::Error::new(std::io::ErrorKind::Other, e.to_string())))?;
-    
+    .map_err(|e| {
+        ChatError::Io(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            e.to_string(),
+        ))
+    })?;
+
     Ok(())
 }

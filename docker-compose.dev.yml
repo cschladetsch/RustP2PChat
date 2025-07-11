@@ -1,0 +1,27 @@
+version: '3.8'
+
+# Development compose file with volume mounts for live development
+services:
+  # Development peer with source code mounted
+  dev-peer:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: p2p-chat-dev
+    environment:
+      - RUST_LOG=debug
+      - RUST_BACKTRACE=1
+    volumes:
+      - ./src:/usr/src/app/src:ro
+      - ./Cargo.toml:/usr/src/app/Cargo.toml:ro
+      - cargo-cache:/usr/local/cargo/registry
+      - target-cache:/usr/src/app/target
+    command: ["--port", "8080", "--debug"]
+    ports:
+      - "8080:8080"
+    stdin_open: true
+    tty: true
+
+volumes:
+  cargo-cache:
+  target-cache:

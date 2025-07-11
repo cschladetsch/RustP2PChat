@@ -6,7 +6,7 @@ use std::io;
 fn test_chat_error_display_io_permission_denied() {
     let io_error = io::Error::new(io::ErrorKind::PermissionDenied, "Permission denied");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Permission denied - check file/directory permissions"));
 }
@@ -15,7 +15,7 @@ fn test_chat_error_display_io_permission_denied() {
 fn test_chat_error_display_io_not_found() {
     let io_error = io::Error::new(io::ErrorKind::NotFound, "File not found");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("File or directory not found"));
 }
@@ -24,7 +24,7 @@ fn test_chat_error_display_io_not_found() {
 fn test_chat_error_display_io_connection_refused() {
     let io_error = io::Error::new(io::ErrorKind::ConnectionRefused, "Connection refused");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Connection refused - peer may not be listening"));
 }
@@ -33,7 +33,7 @@ fn test_chat_error_display_io_connection_refused() {
 fn test_chat_error_display_io_connection_aborted() {
     let io_error = io::Error::new(io::ErrorKind::ConnectionAborted, "Connection aborted");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Connection lost unexpectedly"));
 }
@@ -42,7 +42,7 @@ fn test_chat_error_display_io_connection_aborted() {
 fn test_chat_error_display_io_timed_out() {
     let io_error = io::Error::new(io::ErrorKind::TimedOut, "Timed out");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Operation timed out - check network connection"));
 }
@@ -51,7 +51,7 @@ fn test_chat_error_display_io_timed_out() {
 fn test_chat_error_display_io_other() {
     let io_error = io::Error::new(io::ErrorKind::Other, "Some other error");
     let chat_error = ChatError::Io(io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("System error"));
     assert!(display_text.contains("Some other error"));
@@ -89,7 +89,7 @@ fn test_chat_error_display_peer_disconnected() {
 fn test_chat_error_display_bind_failed_addr_in_use() {
     let io_error = io::Error::new(io::ErrorKind::AddrInUse, "Address already in use");
     let chat_error = ChatError::BindFailed("127.0.0.1:8080".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Port 127.0.0.1:8080 is already in use - try a different port"));
 }
@@ -98,16 +98,17 @@ fn test_chat_error_display_bind_failed_addr_in_use() {
 fn test_chat_error_display_bind_failed_permission_denied() {
     let io_error = io::Error::new(io::ErrorKind::PermissionDenied, "Permission denied");
     let chat_error = ChatError::BindFailed("0.0.0.0:80".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Cannot use port 0.0.0.0:80 - permission denied (try a port above 1024)"));
+    assert!(display_text
+        .contains("Cannot use port 0.0.0.0:80 - permission denied (try a port above 1024)"));
 }
 
 #[test]
 fn test_chat_error_display_bind_failed_other() {
     let io_error = io::Error::new(io::ErrorKind::Other, "Some bind error");
     let chat_error = ChatError::BindFailed("127.0.0.1:8080".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
     assert!(display_text.contains("Cannot start server on 127.0.0.1:8080"));
 }
@@ -116,34 +117,40 @@ fn test_chat_error_display_bind_failed_other() {
 fn test_chat_error_display_connect_failed_connection_refused() {
     let io_error = io::Error::new(io::ErrorKind::ConnectionRefused, "Connection refused");
     let chat_error = ChatError::ConnectFailed("192.168.1.100:8080".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Cannot reach 192.168.1.100:8080 - peer may not be running or firewall blocking"));
+    assert!(display_text.contains(
+        "Cannot reach 192.168.1.100:8080 - peer may not be running or firewall blocking"
+    ));
 }
 
 #[test]
 fn test_chat_error_display_connect_failed_timed_out() {
     let io_error = io::Error::new(io::ErrorKind::TimedOut, "Connection timed out");
     let chat_error = ChatError::ConnectFailed("10.0.0.1:9000".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Connection to 10.0.0.1:9000 timed out - check IP address and network"));
+    assert!(display_text
+        .contains("Connection to 10.0.0.1:9000 timed out - check IP address and network"));
 }
 
 #[test]
 fn test_chat_error_display_connect_failed_invalid_input() {
     let io_error = io::Error::new(io::ErrorKind::InvalidInput, "Invalid input");
     let chat_error = ChatError::ConnectFailed("invalid_address".to_string(), io_error);
-    
+
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Invalid address 'invalid_address' - use format IP:PORT (e.g., 192.168.1.100:8080)"));
+    assert!(display_text.contains(
+        "Invalid address 'invalid_address' - use format IP:PORT (e.g., 192.168.1.100:8080)"
+    ));
 }
 
 #[test]
 fn test_chat_error_display_encryption() {
     let chat_error = ChatError::Encryption("Key exchange failed".to_string());
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Security error: Key exchange failed (encryption may be compromised)"));
+    assert!(display_text
+        .contains("Security error: Key exchange failed (encryption may be compromised)"));
 }
 
 #[test]
@@ -164,7 +171,9 @@ fn test_chat_error_display_file_transfer_hash_mismatch() {
 fn test_chat_error_display_file_transfer_failed_to_create() {
     let chat_error = ChatError::FileTransfer("Failed to create download directory".to_string());
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Cannot save file: Failed to create download directory (check disk space and permissions)"));
+    assert!(display_text.contains(
+        "Cannot save file: Failed to create download directory (check disk space and permissions)"
+    ));
 }
 
 #[test]
@@ -178,14 +187,16 @@ fn test_chat_error_display_file_transfer_other() {
 fn test_chat_error_display_configuration_failed_to_read() {
     let chat_error = ChatError::Configuration("Failed to read config file".to_string());
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Cannot read settings: Failed to read config file (file may be corrupted)"));
+    assert!(display_text
+        .contains("Cannot read settings: Failed to read config file (file may be corrupted)"));
 }
 
 #[test]
 fn test_chat_error_display_configuration_failed_to_write() {
     let chat_error = ChatError::Configuration("Failed to write config file".to_string());
     let display_text = format!("{}", chat_error);
-    assert!(display_text.contains("Cannot save settings: Failed to write config file (check permissions)"));
+    assert!(display_text
+        .contains("Cannot save settings: Failed to write config file (check permissions)"));
 }
 
 #[test]
@@ -199,7 +210,7 @@ fn test_chat_error_display_configuration_other() {
 fn test_chat_error_source_io() {
     let io_error = io::Error::new(io::ErrorKind::NotFound, "Not found");
     let chat_error = ChatError::Io(io_error);
-    
+
     assert!(chat_error.source().is_some());
 }
 
@@ -207,7 +218,7 @@ fn test_chat_error_source_io() {
 fn test_chat_error_source_bind_failed() {
     let io_error = io::Error::new(io::ErrorKind::AddrInUse, "Address in use");
     let chat_error = ChatError::BindFailed("127.0.0.1:8080".to_string(), io_error);
-    
+
     assert!(chat_error.source().is_some());
 }
 
@@ -215,7 +226,7 @@ fn test_chat_error_source_bind_failed() {
 fn test_chat_error_source_connect_failed() {
     let io_error = io::Error::new(io::ErrorKind::ConnectionRefused, "Connection refused");
     let chat_error = ChatError::ConnectFailed("127.0.0.1:8080".to_string(), io_error);
-    
+
     assert!(chat_error.source().is_some());
 }
 
@@ -230,7 +241,7 @@ fn test_chat_error_source_others() {
         ChatError::FileTransfer("test".to_string()),
         ChatError::Configuration("test".to_string()),
     ];
-    
+
     for error in errors {
         assert!(error.source().is_none());
     }
@@ -240,7 +251,7 @@ fn test_chat_error_source_others() {
 fn test_chat_error_from_io_error() {
     let io_error = io::Error::new(io::ErrorKind::NotFound, "File not found");
     let chat_error: ChatError = io_error.into();
-    
+
     if let ChatError::Io(inner) = chat_error {
         assert_eq!(inner.kind(), io::ErrorKind::NotFound);
     } else {
@@ -253,7 +264,7 @@ fn test_result_type_alias() {
     fn test_function() -> Result<String> {
         Ok("success".to_string())
     }
-    
+
     let result = test_function();
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), "success");
@@ -264,12 +275,12 @@ fn test_result_error_propagation() {
     fn inner_function() -> Result<()> {
         Err(ChatError::PeerDisconnected)
     }
-    
+
     fn outer_function() -> Result<String> {
         inner_function()?;
         Ok("never reached".to_string())
     }
-    
+
     let result = outer_function();
     assert!(result.is_err());
     assert!(matches!(result.unwrap_err(), ChatError::PeerDisconnected));
@@ -287,7 +298,7 @@ fn test_chat_error_debug_format() {
 fn test_chat_error_equality_check() {
     // Test that we can match on error variants
     let error = ChatError::PeerDisconnected;
-    
+
     match error {
         ChatError::PeerDisconnected => {
             // This should match
@@ -301,10 +312,10 @@ fn test_complex_error_chain() {
     // Test error conversion chain
     let io_error = io::Error::new(io::ErrorKind::PermissionDenied, "Access denied");
     let chat_error: ChatError = io_error.into();
-    
+
     let display_msg = format!("{}", chat_error);
     assert!(display_msg.contains("Permission denied"));
-    
+
     // Test that source is preserved
     assert!(chat_error.source().is_some());
 }
