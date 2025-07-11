@@ -41,6 +41,8 @@ Unlike traditional chat applications that rely on central servers, **Rust P2P Ch
 
 ## Demo
 
+Run `shell/test_mux.sh`:
+
 ![Demo](resources/Demo1.gif)
 
 ## Quick Start
