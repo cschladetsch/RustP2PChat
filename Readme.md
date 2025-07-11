@@ -11,7 +11,6 @@ See [Features](Features.md) and [ChangeLog](ChangeLog.md)
 - [Demo](#demo)
 - [Quick Start](#quick-start)
 - [Features](#features)
-- [Installation Options](#installation-options)
 - [Usage](#usage)
 - [Commands](#commands)
 - [Configuration](#configuration)
@@ -32,7 +31,6 @@ See [Features](Features.md) and [ChangeLog](ChangeLog.md)
 - **Rich Terminal UI**: Colorful interface with encryption status indicators
 - **GUI Support**: Optional graphical interface for enhanced user experience
 - **Cross-Platform**: Linux, macOS, Windows support with async Rust performance
-- **macOS Installer**: Universal DMG installer for Intel and Apple Silicon Macs
 - **Media Auto-Open**: Automatically open received images, videos, and documents
 - **Smart Downloads**: Files saved to system Downloads folder with verification
 - **Comprehensive Testing**: 180+ tests across 10 categories with extensive coverage
@@ -97,26 +95,6 @@ You are now chatting peer-to-peer with end-to-end encryption.
 - **Automatic Key Generation**: New encryption keys for every session
 - **Message Authentication**: Built-in integrity verification with GCM
 - **Visual Encryption Indicators**: Icon shows when messages are encrypted
-
-## Installation Options
-
-### Pre-built Binaries
-
-Download the latest release from the [Releases](https://github.com/cschladetsch/RustP2PChat/releases) page.
-
-### macOS Installer
-
-For macOS users, a DMG installer is available:
-
-1. **Download the DMG installer** from the releases page
-2. **Open the DMG file** and drag RustP2PChat.app to Applications
-3. **Launch from Applications** or Launchpad
-
-The macOS installer includes:
-- Universal binary (Intel + Apple Silicon support)
-- Standard macOS app bundle
-- Automatic file associations
-- System Downloads folder integration
 
 ### Building from Source
 
