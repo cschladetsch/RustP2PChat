@@ -52,7 +52,7 @@ Run `shell/test_mux.sh`:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/RustChat.git
+git clone https://github.com/cschladetsch/RustChat.git
 cd rust-p2p-chat
 
 # Build and run
@@ -80,8 +80,8 @@ cargo run --release -- --connect localhost:8080
 docker-compose up
 
 # Or run manually in two terminals:
-# Terminal 1: docker run -it --rm -p 8080:8080 ghcr.io/your-username/rust-p2p-chat --port 8080  
-# Terminal 2: docker run -it --rm ghcr.io/your-username/rust-p2p-chat --connect host.docker.internal:8080
+# Terminal 1: docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080  
+# Terminal 2: docker run -it --rm ghcr.io/cschladetsch/rust-p2p-chat --connect host.docker.internal:8080
 ```
 
 You are now chatting peer-to-peer with end-to-end encryption.
@@ -313,7 +313,7 @@ Available commands:
 
 ```bash
 # Using pre-built image (recommended)
-docker run -it --rm -p 8080:8080 ghcr.io/your-username/rust-p2p-chat --port 8080
+docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080
 
 # Or build your own
 docker build -t rust-p2p-chat .
@@ -326,10 +326,10 @@ Deploy your own version to Docker Hub:
 
 ```bash
 # Using the deployment script
-./deploy-docker.sh <your-dockerhub-username>
+./deploy-docker.sh cschladetsch
 
 # After deployment, others can use:
-docker run -it --rm <your-dockerhub-username>/rust-p2p-chat
+docker run -it --rm cschladetsch/rust-p2p-chat
 ```
 
 ### Docker Compose
@@ -404,7 +404,7 @@ First, ensure you have Rust installed. If not, install it from [rustup.rs](https
 #### Windows
 
 ##### Option 1: Pre-built Binary (Coming Soon)
-Pre-built binaries will be available in the [Releases](https://github.com/your-username/RustChat/releases) section.
+Pre-built binaries will be available in the [Releases](https://github.com/cschladetsch/RustChat/releases) section.
 For now, please build from source using Option 2 below.
 
 ##### Option 2: Build from Source
@@ -438,7 +438,7 @@ cargo --version
 3. **Clone and build:**
 ```powershell
 # Clone the repository
-git clone https://github.com/your-username/RustChat.git
+git clone https://github.com/cschladetsch/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
@@ -534,7 +534,7 @@ source "$HOME/.cargo/env"
 2. **Clone and build:**
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/RustChat.git
+git clone https://github.com/cschladetsch/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
@@ -566,7 +566,7 @@ source "$HOME/.cargo/env"
 2. **Clone and build:**
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/RustChat.git
+git clone https://github.com/cschladetsch/RustChat.git
 cd rust-p2p-chat
 
 # Build release version
