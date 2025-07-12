@@ -80,8 +80,8 @@ cargo run --release -- --connect localhost:8080
 docker-compose up
 
 # Or run manually in two terminals:
-# Terminal 1: docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080  
-# Terminal 2: docker run -it --rm ghcr.io/cschladetsch/rust-p2p-chat --connect host.docker.internal:8080
+# Terminal 1: docker run -it --rm -p 8080:8080 cschladetsch/rust-p2p-chat --port 8080  
+# Terminal 2: docker run -it --rm cschladetsch/rust-p2p-chat --connect host.docker.internal:8080
 ```
 
 You are now chatting peer-to-peer with end-to-end encryption.
