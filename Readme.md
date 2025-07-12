@@ -313,7 +313,7 @@ Available commands:
 
 ```bash
 # Using pre-built image (recommended)
-docker run -it --rm -p 8080:8080 ghcr.io/cschladetsch/rust-p2p-chat --port 8080
+docker run -it --rm -p 8080:8080 cschladetsch/rust-p2p-chat --port 8080
 
 # Or build your own
 docker build -t rust-p2p-chat .
