@@ -4,6 +4,12 @@ A decentralized peer-to-peer chat application built with Rust and Tokio. Provide
 
 See [Features](Features.md) and [ChangeLog](ChangeLog.md)
 
+## Demo
+
+Run `shell/test_mux.sh`:
+
+![Demo](resources/Demo1.gif)
+
 ## Table of Contents
 
 - [Key Highlights](#key-highlights)
@@ -39,12 +45,6 @@ See [Features](Features.md) and [ChangeLog](ChangeLog.md)
 ## What Makes This Special?
 
 Unlike traditional chat applications that rely on central servers, **Rust P2P Chat** establishes direct TCP connections between peers. There's no "server" and "client" in the traditional sense - both peers are equal participants in the conversation. The first peer simply waits for a connection, while the second initiates it. Once connected, both peers have identical capabilities.
-
-## Demo
-
-Run `shell/test_mux.sh`:
-
-![Demo](resources/Demo1.gif)
 
 ## Quick Start
 
